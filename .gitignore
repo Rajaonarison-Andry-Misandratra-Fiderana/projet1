@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Build outputs
+dist/
+build/
+*.js.map
+*.css.map
+
+# Angular
+.angular/
+angular-cli-cache/
+.ng/
+out-tsc/
+bazel-out/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Yarn
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# misc
+*.bak
+*.swp
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Package manager lock files (optional - uncomment if you want to commit them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

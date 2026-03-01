@@ -43,6 +43,26 @@ export const routes: Routes = [
       import('./components/orders/buyer-orders.component').then((m) => m.BuyerOrdersComponent),
   },
   {
+    path: 'cart',
+    canActivate: [AuthGuard],
+    data: { roles: ['acheteur'] },
+    loadComponent: () => import('./components/orders/cart.component').then((m) => m.CartComponent),
+  },
+  {
+    path: 'checkout',
+    canActivate: [AuthGuard],
+    data: { roles: ['acheteur'] },
+    loadComponent: () =>
+      import('./components/orders/checkout.component').then((m) => m.CheckoutComponent),
+  },
+  {
+    path: 'checkout/:id',
+    canActivate: [AuthGuard],
+    data: { roles: ['acheteur'] },
+    loadComponent: () =>
+      import('./components/orders/checkout.component').then((m) => m.CheckoutComponent),
+  },
+  {
     path: 'boutique/dashboard',
     canActivate: [AuthGuard],
     data: { roles: ['boutique'] },

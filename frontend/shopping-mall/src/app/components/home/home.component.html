@@ -1,34 +1,76 @@
 <div class="home-container">
+  <!-- Scroll Indicator (optionnel) -->
+  <div class="scroll-indicator">
+    <span></span>
+    <span>Découvrir</span>
+  </div>
+
   <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Bienvenue sur Shopping Mall</h1>
-      <p>Découvrez des produits uniques proposés par nos boutiques</p>
-      <a routerLink="/products" class="btn-primary">Commencer vos achats</a>
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="section-container">
+      <div class="hero-content">
+        <p class="hero-kicker">Marketplace locale</p>
+        <h1>Shopping Mall, simple et rapide</h1>
+        <p class="hero-subtitle">
+          Explorez des produits de plusieurs boutiques, comparez les prix et achetez en toute confiance.
+        </p>
+
+        <div class="hero-actions">
+          <a routerLink="/products" class="btn-primary">Voir les produits</a>
+          <a routerLink="/signup" class="btn-secondary">Créer un compte</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-pill">
+            <strong>+100</strong>
+            <span>produits</span>
+          </div>
+          <div class="stat-pill">
+            <strong>24h</strong>
+            <span>support client</span>
+          </div>
+          <div class="stat-pill">
+            <strong>100%</strong>
+            <span>paiement sécurisé</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- Categories Section -->
   <section class="categories-section">
     <div class="section-container">
-      <h2>Acheter par catégorie</h2>
+      <div class="section-head">
+        <h2>Acheter par catégorie</h2>
+        <p>Trouvez ce qu'il vous faut en quelques clics.</p>
+      </div>
+
       <div class="categories-grid">
-        <div class="category-card">
+        <article class="category-card">
           <span class="category-icon">👕</span>
-          <h3>Fashion</h3>
-        </div>
-        <div class="category-card">
+          <h3>Mode</h3>
+          <p>Vêtements, accessoires et tendances.</p>
+        </article>
+
+        <article class="category-card">
           <span class="category-icon">💻</span>
-          <h3>Electronics</h3>
-        </div>
-        <div class="category-card">
+          <h3>Électronique</h3>
+          <p>Ordinateurs, smartphones et gadgets.</p>
+        </article>
+
+        <article class="category-card">
           <span class="category-icon">🏠</span>
-          <h3>Home & Garden</h3>
-        </div>
-        <div class="category-card">
+          <h3>Maison</h3>
+          <p>Décoration, cuisine et équipements.</p>
+        </article>
+
+        <article class="category-card">
           <span class="category-icon">📚</span>
-          <h3>Books</h3>
-        </div>
+          <h3>Livres</h3>
+          <p>Éducation, romans et loisirs.</p>
+        </article>
       </div>
     </div>
   </section>
@@ -36,28 +78,38 @@
   <!-- Info Section -->
   <section class="info-section">
     <div class="section-container">
+      <div class="section-head">
+        <h2>Pourquoi choisir Shopping Mall</h2>
+        <p>Une expérience d'achat fluide, pensée pour mobile et desktop.</p>
+      </div>
+
       <div class="info-grid">
-        <div class="info-card">
+        <article class="info-card">
           <span class="info-icon">🚚</span>
           <h3>Livraison rapide</h3>
-          <p>Expédition fiable et rapide jusqu'à votre porte</p>
-        </div>
-        <div class="info-card">
+          <p>Traitement efficace de vos commandes par les vendeurs.</p>
+        </article>
+
+        <article class="info-card">
           <span class="info-icon">💰</span>
-          <h3>Meilleurs prix</h3>
-          <p>Des tarifs compétitifs proposés par plusieurs boutiques</p>
-        </div>
-        <div class="info-card">
+          <h3>Prix compétitifs</h3>
+          <p>Comparez facilement et trouvez la meilleure offre.</p>
+        </article>
+
+        <article class="info-card">
           <span class="info-icon">🔒</span>
           <h3>Paiement sécurisé</h3>
-          <p>Des moyens de paiement fiables et sécurisés</p>
-        </div>
-        <div class="info-card">
+          <p>Processus de paiement fiable pour vos transactions.</p>
+        </article>
+
+        <article class="info-card">
           <span class="info-icon">⭐</span>
-          <h3>Support client</h3>
-          <p>Assistance disponible 24/7</p>
-        </div>
+          <h3>Support réactif</h3>
+          <p>Assistance disponible à chaque étape de votre achat.</p>
+        </article>
       </div>
     </div>
   </section>
+
+
 </div>

@@ -33,6 +33,11 @@
       <p class="label">Chiffre d'affaires</p>
       <p class="value">{{ totalSales | number: '1.0-0' }} MGA</p>
     </article>
+
+    <article class="stat-card big success">
+      <p class="label">Montant transféré</p>
+      <p class="value">{{ transferredAmount | number: '1.0-0' }} MGA</p>
+    </article>
   </div>
 
   <div *ngIf="loading" class="loading-panel">Chargement des statistiques boutique...</div>

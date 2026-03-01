@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../models/product.model';
 import { API_BASE_URL } from '../config/api.config';
+import { getEntityId } from '../utils/id.util';
+import { CommerceSyncService } from './commerce-sync.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +15,10 @@ export class ProductService {
   private refreshSubject = new Subject<void>();
   public refresh$ = this.refreshSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private commerceSyncService: CommerceSyncService,
+  ) {}
 
   getProducts(filters?: {
     category?: string;
@@ -30,15 +35,21 @@ export class ProductService {
       if (filters.minPrice) params = params.set('minPrice', filters.minPrice.toString());
       if (filters.maxPrice) params = params.set('maxPrice', filters.maxPrice.toString());
     }
-    return this.http.get<Product[]>(this.apiUrl, { params });
+    return this.http
+      .get<Product[]>(this.apiUrl, { params })
+      .pipe(map((products) => products.map((product) => this.withSyncedStock(product))));
   }
 
   getProductById(id: string): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`);
+    return this.http
+      .get<Product>(`${this.apiUrl}/${id}`)
+      .pipe(map((product) => this.withSyncedStock(product)));
   }
 
   getProductsByShop(shopId: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/shop/${shopId}`);
+    return this.http
+      .get<Product[]>(`${this.apiUrl}/shop/${shopId}`)
+      .pipe(map((products) => products.map((product) => this.withSyncedStock(product))));
   }
 
   createProduct(request: CreateProductRequest): Observable<Product> {
@@ -61,5 +72,14 @@ export class ProductService {
 
   addReview(productId: string, review: { comment: string; rating: number }): Observable<Product> {
     return this.http.post<Product>(`${this.apiUrl}/${productId}/reviews`, review);
+  }
+
+  private withSyncedStock(product: Product): Product {
+    const productId = getEntityId(product);
+    if (!productId) return product;
+    return {
+      ...product,
+      stock: this.commerceSyncService.applyStockOffset(product.stock || 0, productId),
+    };
   }
 }

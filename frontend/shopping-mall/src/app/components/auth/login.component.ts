@@ -16,7 +16,6 @@ export class LoginComponent implements OnInit {
   loading = false;
   submitted = false;
   error = '';
-  apiBaseUrl = '';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -25,7 +24,6 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.apiBaseUrl = this.authService.apiBaseUrl;
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]

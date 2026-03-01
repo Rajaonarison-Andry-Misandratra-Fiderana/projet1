@@ -1,7 +1,8 @@
 <div class="products-container">
   <div class="products-header">
+    <p class="header-kicker">Marketplace</p>
     <h1>Catalogue Produits</h1>
-    <p>Parcourez les offres de différentes boutiques</p>
+    <p class="header-subtitle">Parcourez les offres des boutiques et trouvez rapidement ce qu'il vous faut.</p>
     <div class="header-actions">
       <button class="btn-refresh" type="button" (click)="loadProducts()">Actualiser</button>
       <button class="btn-reset" type="button" (click)="resetFilters()">Réinitialiser filtres</button>
@@ -9,8 +10,11 @@
   </div>
 
   <div class="products-content">
-    <!-- Sidebar Filters -->
     <div class="sidebar">
+      <div class="sidebar-head">
+        <h2>Filtres</h2>
+      </div>
+
       <div class="filter-section">
         <h3>Recherche</h3>
         <input type="text" class="search-input" placeholder="Rechercher un produit..." [(ngModel)]="searchQuery"
@@ -40,8 +44,11 @@
       </div>
     </div>
 
-    <!-- Products Grid -->
     <div class="products-grid-section">
+      <div class="results-bar" *ngIf="!loading && !error">
+        <p>{{ filteredProducts.length }} produit(s) affiché(s)</p>
+      </div>
+
       <div *ngIf="loading" class="loading">
         <p>Chargement des produits...</p>
       </div>
@@ -77,6 +84,7 @@
 
       <div *ngIf="!loading && filteredProducts.length === 0" class="no-products">
         <p>Aucun produit trouvé. Ajustez vos filtres.</p>
+        <button type="button" class="btn-reset" (click)="resetFilters()">Effacer les filtres</button>
       </div>
     </div>
   </div>
@@ -91,5 +99,13 @@
     <p class="popup-price">{{ selectedProduct.price | number: '1.0-0' }} MGA</p>
     <p class="popup-stock">Stock: {{ selectedProduct.stock }}</p>
     <p class="popup-desc">{{ selectedProduct.description || 'Aucune description disponible.' }}</p>
+    <button
+      *ngIf="isBuyer"
+      class="popup-buy-btn"
+      [disabled]="selectedProduct.stock <= 0"
+      (click)="buySelectedProduct()"
+    >
+      Acheter
+    </button>
   </div>
 </div>

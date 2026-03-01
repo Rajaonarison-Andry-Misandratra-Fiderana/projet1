@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
+import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { Product } from '../../models/product.model';
 import { PRODUCT_CATEGORIES } from '../../constants/categories';
 
@@ -27,15 +29,19 @@ export class ProductsListComponent implements OnInit, OnDestroy {
   readonly maxPriceLimit = 10000000;
   private destroy$ = new Subject<void>();
   selectedProduct: Product | null = null;
+  isBuyer = false;
 
   categories = PRODUCT_CATEGORIES;
   constructor(
     private productService: ProductService,
+    private authService: AuthService,
     private router: Router,
+    private cartService: CartService,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
+    this.isBuyer = this.authService.hasRole(['acheteur']);
     this.loadProducts();
 
     // Reload when products change (create/update/delete elsewhere)
@@ -91,20 +97,47 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.selectedProduct = null;
   }
 
+  buySelectedProduct(): void {
+    if (!this.selectedProduct) return;
+    if (!this.authService.isAuthenticated() || !this.authService.hasRole(['acheteur'])) {
+      alert('Vous devez être connecté en tant qu’acheteur.');
+      this.router.navigate(['/login']);
+      return;
+    }
+    this.cartService.addProduct(this.selectedProduct, 1);
+    this.closeProductPopup();
+  }
+
   applyFilters(): void {
     const min = Math.min(this.minPrice, this.maxPrice);
     const max = Math.max(this.minPrice, this.maxPrice);
+    const normalizedSearch = this.normalizeText(this.searchQuery);
+
     this.filteredProducts = this.products.filter((product) => {
-      const matchesSearch =
-        !this.searchQuery ||
-        product.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const haystack = this.normalizeText(
+        [
+          product.name,
+          product.description || '',
+          product.category || '',
+          product.location || '',
+          this.getSellerName(product),
+        ].join(' '),
+      );
+      const matchesSearch = !normalizedSearch || haystack.includes(normalizedSearch);
 
       const matchesCategory = !this.selectedCategory || product.category === this.selectedCategory;
       const matchesPrice = product.price >= min && product.price <= max;
 
       return matchesSearch && matchesCategory && matchesPrice;
     });
+  }
+
+  private normalizeText(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
   }
 
   onSearchChange(): void {

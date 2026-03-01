@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, forkJoin } from 'rxjs';
+import { Subject, forkJoin, merge, timer } from 'rxjs';
 import { distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
 import { OrderService } from '../../services/order.service';
@@ -9,6 +9,7 @@ import { Product } from '../../models/product.model';
 import { Order } from '../../models/order.model';
 import { getEntityId } from '../../utils/id.util';
 import { getProductClicks } from '../../utils/product-clicks.util';
+import { CommerceSyncService } from '../../services/commerce-sync.service';
 
 type ProductDashboardRow = {
   id: string;
@@ -35,10 +36,12 @@ export class BoutiqueDashboardComponent implements OnInit, OnDestroy {
   totalSales = 0;
   totalClicks = 0;
   unitsSoldTotal = 0;
+  transferredAmount = 0;
   loading = true;
   error: string | null = null;
 
   productRows: ProductDashboardRow[] = [];
+  private currentShopId = '';
 
   private destroy$ = new Subject<void>();
 
@@ -46,6 +49,7 @@ export class BoutiqueDashboardComponent implements OnInit, OnDestroy {
     private productService: ProductService,
     private orderService: OrderService,
     private authService: AuthService,
+    private commerceSyncService: CommerceSyncService,
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -60,16 +64,24 @@ export class BoutiqueDashboardComponent implements OnInit, OnDestroy {
         if (!shopId) {
           this.error = 'Shop information not available.';
           this.loading = false;
+          this.currentShopId = '';
           this.cdr.detectChanges();
           return;
         }
-        this.loadDashboard(shopId);
+        this.currentShopId = shopId;
+        this.loadDashboard(this.currentShopId);
       });
 
-    this.productService.refresh$.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      const shopId = getEntityId(this.authService.currentUserValue);
-      if (shopId) this.loadDashboard(shopId);
-    });
+    merge(
+      this.productService.refresh$,
+      this.orderService.refresh$,
+      this.commerceSyncService.refresh$,
+      timer(12000, 12000),
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.currentShopId) this.loadDashboard(this.currentShopId);
+      });
   }
 
   ngOnDestroy(): void {
@@ -80,6 +92,7 @@ export class BoutiqueDashboardComponent implements OnInit, OnDestroy {
   private loadDashboard(shopId: string): void {
     this.loading = true;
     this.error = null;
+    this.transferredAmount = this.commerceSyncService.getTransferredAmountForShop(shopId);
 
     forkJoin({
       products: this.productService.getProductsByShop(shopId),

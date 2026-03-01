@@ -8,7 +8,8 @@
     </div>
 
     <div class="navbar-center">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link nav-main">Accueil</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link nav-main">Accueil</a>
       <a routerLink="/products" routerLinkActive="active" class="nav-link nav-main">Produits</a>
       <a routerLink="/profile" routerLinkActive="active" class="nav-link nav-main">Profil</a>
     </div>
@@ -41,7 +42,18 @@
             <span class="user-role" [ngClass]="'role-' + currentUser.role">{{ currentUser.role }}</span>
           </div>
 
-          <div class="nav-dropdown">
+          <a *ngIf="isAcheteur()" routerLink="/cart" class="nav-link orders-shortcut cart-link" title="Panier"
+            aria-label="Panier">
+            <span class="cart-icon">🛒</span>
+            <span *ngIf="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
+          </a>
+
+          <button *ngIf="isAcheteur()" class="nav-link desktop-logout" title="Déconnexion" aria-label="Déconnexion"
+            (click)="logout()">
+            ⎋
+          </button>
+
+          <div *ngIf="!isAcheteur()" class="nav-dropdown">
             <button class="nav-link dropdown-toggle" aria-label="Ouvrir le menu utilisateur">☰</button>
             <div class="dropdown-menu">
               <a *ngIf="isAdmin()" routerLink="/admin/dashboard" class="dropdown-item">
@@ -55,9 +67,6 @@
               </a>
               <a *ngIf="isBoutique()" routerLink="/boutique/products" class="dropdown-item">
                 Mes produits
-              </a>
-              <a *ngIf="isAcheteur()" routerLink="/buyer/orders" class="dropdown-item">
-                Mes commandes
               </a>
               <hr class="dropdown-divider">
               <button (click)="logout()" class="dropdown-item logout">

@@ -34,7 +34,7 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.8rem;
 }
 
@@ -48,6 +48,11 @@
 
 .stat-card.big {
   grid-column: span 2;
+}
+
+.stat-card.success {
+  border-color: #c7e8da;
+  background: linear-gradient(150deg, #ffffff, #eefcf6);
 }
 
 .label {
