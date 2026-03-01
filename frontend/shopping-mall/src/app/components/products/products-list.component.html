@@ -1,37 +1,40 @@
 <div class="products-container">
   <div class="products-header">
-    <h1>Products Catalog</h1>
-    <p>Browse our collection of products from various boutiques</p>
-    <button class="btn-refresh" type="button" (click)="loadProducts()">Actualiser</button>
+    <h1>Catalogue Produits</h1>
+    <p>Parcourez les offres de différentes boutiques</p>
+    <div class="header-actions">
+      <button class="btn-refresh" type="button" (click)="loadProducts()">Actualiser</button>
+      <button class="btn-reset" type="button" (click)="resetFilters()">Réinitialiser filtres</button>
+    </div>
   </div>
 
   <div class="products-content">
     <!-- Sidebar Filters -->
     <div class="sidebar">
       <div class="filter-section">
-        <h3>Search</h3>
-        <input type="text" class="search-input" placeholder="Search products..." [(ngModel)]="searchQuery"
+        <h3>Recherche</h3>
+        <input type="text" class="search-input" placeholder="Rechercher un produit..." [(ngModel)]="searchQuery"
           (ngModelChange)="onSearchChange()">
       </div>
 
       <div class="filter-section">
-        <h3>Category</h3>
+        <h3>Catégorie</h3>
         <select class="filter-select" [(ngModel)]="selectedCategory" (ngModelChange)="onCategoryChange()">
-          <option value="">All Categories</option>
+          <option value="">Toutes les catégories</option>
           <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
         </select>
       </div>
 
       <div class="filter-section">
-        <h3>Price Range</h3>
+        <h3>Fourchette de prix</h3>
         <div class="price-range">
           <div class="price-input">
-            <label>Min: ${{ minPrice }}</label>
-            <input type="range" min="0" max="10000" [(ngModel)]="minPrice" (ngModelChange)="onPriceChange()">
+            <label>Min: {{ minPrice | number: '1.0-0' }} MGA</label>
+            <input type="range" min="0" [max]="maxPriceLimit" [(ngModel)]="minPrice" (ngModelChange)="onPriceChange()">
           </div>
           <div class="price-input">
-            <label>Max: ${{ maxPrice }}</label>
-            <input type="range" min="0" max="10000" [(ngModel)]="maxPrice" (ngModelChange)="onPriceChange()">
+            <label>Max: {{ maxPrice | number: '1.0-0' }} MGA</label>
+            <input type="range" min="0" [max]="maxPriceLimit" [(ngModel)]="maxPrice" (ngModelChange)="onPriceChange()">
           </div>
         </div>
       </div>
@@ -40,7 +43,7 @@
     <!-- Products Grid -->
     <div class="products-grid-section">
       <div *ngIf="loading" class="loading">
-        <p>Loading products...</p>
+        <p>Chargement des produits...</p>
       </div>
 
       <div *ngIf="error" class="alert alert-error">
@@ -48,10 +51,10 @@
       </div>
 
       <div *ngIf="!loading && filteredProducts.length > 0" class="products-grid">
-        <div *ngFor="let product of filteredProducts" class="product-card">
+        <div *ngFor="let product of filteredProducts" class="product-card" (click)="openProductPopup(product)">
           <div class="product-image">
             <img [src]="product.image || '/assets/placeholder.png'" [alt]="product.name">
-            <span *ngIf="product.stock <= 0" class="out-of-stock">Out of Stock</span>
+            <span *ngIf="product.stock <= 0" class="out-of-stock">Rupture de stock</span>
             <span *ngIf="product.rating" class="rating">
               ⭐ {{ product.rating.toFixed(1) }}
             </span>
@@ -65,16 +68,28 @@
               {{ product.description?.substring(0, 60) }}...
             </p>
             <div class="product-footer">
-              <span class="price">${{ product.price }}</span>
-              <a [routerLink]="['/products', getProductId(product)]" class="btn-view">View Details</a>
+              <span class="price">{{ product.price | number: '1.0-0' }} MGA</span>
+              <span class="seller-name">{{ getSellerName(product) }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <div *ngIf="!loading && filteredProducts.length === 0" class="no-products">
-        <p>No products found. Try adjusting your filters.</p>
+        <p>Aucun produit trouvé. Ajustez vos filtres.</p>
       </div>
     </div>
+  </div>
+</div>
+
+<div *ngIf="selectedProduct" class="product-popup-overlay" (click)="closeProductPopup()">
+  <div class="product-popup" (click)="$event.stopPropagation()">
+    <button class="popup-close" (click)="closeProductPopup()">×</button>
+    <img [src]="selectedProduct.image || '/assets/placeholder.png'" [alt]="selectedProduct.name" />
+    <h3>{{ selectedProduct.name }}</h3>
+    <p class="popup-seller">Vendeur: {{ getSellerName(selectedProduct) }}</p>
+    <p class="popup-price">{{ selectedProduct.price | number: '1.0-0' }} MGA</p>
+    <p class="popup-stock">Stock: {{ selectedProduct.stock }}</p>
+    <p class="popup-desc">{{ selectedProduct.description || 'Aucune description disponible.' }}</p>
   </div>
 </div>

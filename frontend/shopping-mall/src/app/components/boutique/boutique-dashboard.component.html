@@ -31,7 +31,7 @@
 
     <article class="stat-card big">
       <p class="label">Chiffre d'affaires</p>
-      <p class="value">${{ totalSales.toFixed(2) }}</p>
+      <p class="value">{{ totalSales | number: '1.0-0' }} MGA</p>
     </article>
   </div>
 
@@ -60,12 +60,12 @@
           <tr *ngFor="let row of productRows">
             <td>{{ row.name }}</td>
             <td>{{ row.category }}</td>
-            <td>${{ row.price }}</td>
+            <td>{{ row.price | number: '1.0-0' }} MGA</td>
             <td>{{ row.stock }}</td>
             <td>{{ row.clicks }}</td>
             <td>{{ row.unitsSold }}</td>
             <td>{{ row.orderCount }}</td>
-            <td>${{ row.salesAmount.toFixed(2) }}</td>
+            <td>{{ row.salesAmount | number: '1.0-0' }} MGA</td>
           </tr>
         </tbody>
       </table>

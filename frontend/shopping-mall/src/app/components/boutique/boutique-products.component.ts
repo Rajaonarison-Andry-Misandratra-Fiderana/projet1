@@ -27,15 +27,24 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     name: '',
     price: 0,
     stock: 0,
+    location: '',
     description: '',
     category: '',
     image: '',
   };
 
   showCreateModal = false;
+  showEditModal = false;
   selectedFile: File | null = null;
   previewImage: string | null = null;
   categories = PRODUCT_CATEGORIES;
+  editingProductId: string | null = null;
+  editProduct: { name: string; description: string; price: number; stock: number } = {
+    name: '',
+    description: '',
+    price: 0,
+    stock: 0,
+  };
 
   constructor(
     private productService: ProductService,
@@ -103,7 +112,78 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     this.showCreateModal = false;
     this.selectedFile = null;
     this.previewImage = null;
-    this.newProduct = { name: '', price: 0, stock: 0, description: '', category: '', image: '' };
+    this.newProduct = {
+      name: '',
+      price: 0,
+      stock: 0,
+      location: '',
+      description: '',
+      category: '',
+      image: '',
+    };
+  }
+
+  openEditModal(product: Product): void {
+    const id = getEntityId(product);
+    if (!id) return;
+    this.editingProductId = id;
+    this.editProduct = {
+      name: String(product.name || ''),
+      description: String(product.description || ''),
+      price: Number(product.price || 0),
+      stock: Number(product.stock || 0),
+    };
+    this.showEditModal = true;
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.editingProductId = null;
+    this.editProduct = { name: '', description: '', price: 0, stock: 0 };
+  }
+
+  canSaveEdit(): boolean {
+    const name = this.editProduct.name.trim();
+    const description = this.editProduct.description.trim();
+    const price = Number(this.editProduct.price || 0);
+    const stock = Number(this.editProduct.stock || 0);
+    return (
+      !!name &&
+      !!description &&
+      Number.isFinite(price) &&
+      price > 0 &&
+      Number.isFinite(stock) &&
+      stock >= 0
+    );
+  }
+
+  saveEdit(e: Event): void {
+    e.preventDefault();
+    if (!this.editingProductId) return;
+    if (!this.canSaveEdit()) {
+      alert('Veuillez remplir correctement tous les champs de modification.');
+      return;
+    }
+
+    const payload = {
+      name: this.editProduct.name.trim(),
+      description: this.editProduct.description.trim(),
+      price: Number(this.editProduct.price),
+      stock: Number(this.editProduct.stock),
+    };
+
+    this.productService.updateProduct(this.editingProductId, payload).subscribe({
+      next: () => {
+        this.closeEditModal();
+        const shopId = getEntityId(this.authService.currentUserValue);
+        if (shopId) this.loadProducts(shopId);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        alert('Impossible de modifier le produit.');
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   onFileSelected(event: Event): void {
@@ -135,6 +215,7 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
       name: String(this.newProduct.name || '').trim(),
       price: Number(this.newProduct.price || 0),
       stock: Number(this.newProduct.stock || 0),
+      location: this.newProduct.location ? String(this.newProduct.location).trim() : undefined,
       description: this.newProduct.description
         ? String(this.newProduct.description).trim()
         : undefined,
@@ -145,7 +226,7 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
 
     if (!this.canPublishProduct()) {
       alert(
-        'Veuillez remplir tous les champs (nom, description, prix, stock, catégorie, image) avant publication.',
+        'Veuillez remplir tous les champs (nom, description, prix, stock, emplacement, catégorie, image) avant publication.',
       );
       return;
     }
@@ -172,25 +253,22 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     });
   }
 
-  edit(id?: string): void {
-    alert('Edit not implemented yet.');
-  }
-
   delete(id?: string): void {
     if (!id) return;
-    if (!confirm('Delete this product?')) return;
+    if (!confirm('Supprimer ce produit ?')) return;
     this.productService.deleteProduct(id).subscribe({
       next: () => {
         // productService.refresh$ will trigger reload; no optimistic local filtering
         this.cdr.detectChanges();
       },
-      error: () => alert('Failed to delete product.'),
+      error: () => alert('Impossible de supprimer le produit.'),
     });
   }
 
   canPublishProduct(): boolean {
     const name = String(this.newProduct.name || '').trim();
     const description = String(this.newProduct.description || '').trim();
+    const location = String(this.newProduct.location || '').trim();
     const category = String(this.newProduct.category || '').trim();
     const price = Number(this.newProduct.price || 0);
     const stock = Number(this.newProduct.stock || 0);
@@ -198,6 +276,7 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     return (
       !!name &&
       !!description &&
+      !!location &&
       !!category &&
       Number.isFinite(price) &&
       price > 0 &&

@@ -1,8 +1,8 @@
 <div class="profile-container">
   <div class="profile-card">
     <div class="profile-header">
-      <h1>My Profile</h1>
-      <p>Manage your account information</p>
+      <h1>Mon profil</h1>
+      <p>Gérez les informations de votre compte</p>
     </div>
 
     <div *ngIf="error" class="alert alert-error">
@@ -15,41 +15,41 @@
 
     <div *ngIf="currentUser" class="profile-info">
       <div class="info-section">
-        <h2>Account Information</h2>
+        <h2>Informations du compte</h2>
         <div class="info-row">
-          <label>Full Name:</label>
+          <label>Nom complet :</label>
           <span>{{ currentUser.name }}</span>
         </div>
         <div class="info-row">
-          <label>Email:</label>
+          <label>E-mail :</label>
           <span>{{ currentUser.email }}</span>
         </div>
         <div class="info-row">
-          <label>Account Type:</label>
+          <label>Type de compte :</label>
           <span class="role-badge" [ngClass]="'role-' + currentUser.role">
-            {{ currentUser.role === 'admin' ? 'Administrator' : currentUser.role === 'boutique' ? 'Shop Owner' : 'Buyer' }}
+            {{ currentUser.role === 'admin' ? 'Administrateur' : currentUser.role === 'boutique' ? 'Boutique' : 'Acheteur' }}
           </span>
         </div>
       </div>
 
       <div class="info-section">
-        <h2>Quick Links</h2>
+        <h2>Accès rapides</h2>
         <div class="quick-links">
           <a *ngIf="currentUser.role === 'boutique'" href="/boutique/dashboard" class="link-btn">
-            View Shop Dashboard
+            Voir le tableau de bord boutique
           </a>
           <a *ngIf="currentUser.role === 'acheteur'" href="/buyer/orders" class="link-btn">
-            View My Orders
+            Voir mes commandes
           </a>
           <a *ngIf="currentUser.role === 'admin'" href="/admin/dashboard" class="link-btn">
-            Admin Dashboard
+            Tableau de bord admin
           </a>
         </div>
       </div>
     </div>
 
     <div *ngIf="loading" class="loading">
-      <p>Loading profile...</p>
+      <p>Chargement du profil...</p>
     </div>
   </div>
 </div>

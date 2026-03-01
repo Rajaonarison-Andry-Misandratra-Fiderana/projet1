@@ -1,9 +1,16 @@
 <nav class="navbar">
   <div class="navbar-container">
-    <div class="navbar-brand">
-      <a routerLink="/" class="brand-link">
+    <div class="navbar-left">
+      <div class="brand-link" aria-label="Shopping Mall">
         <span class="brand-icon">🛍️</span>
-      </a>
+        <span class="brand-text">Shopping Mall</span>
+      </div>
+    </div>
+
+    <div class="navbar-center">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link nav-main">Accueil</a>
+      <a routerLink="/products" routerLinkActive="active" class="nav-link nav-main">Produits</a>
+      <a routerLink="/profile" routerLinkActive="active" class="nav-link nav-main">Profil</a>
     </div>
 
     <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
@@ -13,13 +20,11 @@
     </button>
 
     <div class="navbar-menu" [class.active]="isMenuOpen">
-      <!-- Section navbar-start vide -->
-      <div class="navbar-start"></div>
-
-      <div class="navbar-center">
-        <input class="nav-search" type="search" placeholder="Rechercher des produits..." (focus)="goToProducts()" />
+      <div class="mobile-main-links">
+        <a routerLink="/" (click)="isMenuOpen = false" class="nav-link">Accueil</a>
+        <a routerLink="/products" (click)="isMenuOpen = false" class="nav-link">Produits</a>
+        <a routerLink="/profile" (click)="isMenuOpen = false" class="nav-link">Profil</a>
       </div>
-
       <div class="navbar-end">
         <ng-container *ngIf="!currentUser">
           <a routerLink="/login" routerLinkActive="active" class="nav-link">
@@ -37,10 +42,7 @@
           </div>
 
           <div class="nav-dropdown">
-            <button class="nav-link dropdown-toggle">
-              {{ currentUser.role === 'admin' ? '⚙️ Admin' : currentUser.role === 'boutique' ? '🏪 Boutique' : '🛒
-              Menu' }}
-            </button>
+            <button class="nav-link dropdown-toggle" aria-label="Ouvrir le menu utilisateur">☰</button>
             <div class="dropdown-menu">
               <a *ngIf="isAdmin()" routerLink="/admin/dashboard" class="dropdown-item">
                 Tableau de bord Admin
@@ -56,9 +58,6 @@
               </a>
               <a *ngIf="isAcheteur()" routerLink="/buyer/orders" class="dropdown-item">
                 Mes commandes
-              </a>
-              <a routerLink="/profile" class="dropdown-item">
-                Profil
               </a>
               <hr class="dropdown-divider">
               <button (click)="logout()" class="dropdown-item logout">

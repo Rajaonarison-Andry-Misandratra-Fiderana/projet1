@@ -20,20 +20,20 @@ import { incrementProductClick } from '../../utils/product-clicks.util';
         alt="{{ product.name }}"
         class="product-img"
       />
-      <p class="price">Price: \${{ product.price }}</p>
+      <p class="price">Prix: {{ product.price | number: '1.0-0' }} MGA</p>
       <p class="desc">{{ product.description }}</p>
 
       <div class="actions">
-        <button (click)="back()">Back to Products</button>
+        <button (click)="back()">Retour aux produits</button>
 
-        <button *ngIf="canBuy" (click)="buy()" [disabled]="product.stock <= 0">Buy</button>
+        <button *ngIf="canBuy" (click)="buy()" [disabled]="product.stock <= 0">Acheter</button>
 
-        <span *ngIf="!canBuy" class="info">Only buyers can purchase products.</span>
+        <span *ngIf="!canBuy" class="info">Seuls les acheteurs peuvent acheter des produits.</span>
       </div>
     </div>
 
     <div *ngIf="!product" class="container">
-      <p>Loading product...</p>
+      <p>Chargement du produit...</p>
     </div>
   `,
   styles: [
@@ -97,7 +97,7 @@ export class ProductDetailComponent implements OnInit {
   buy(): void {
     if (!this.product) return;
     if (!this.authService.isAuthenticated() || !this.authService.hasRole(['acheteur'])) {
-      alert('You must be logged in as a buyer to purchase.');
+      alert('Vous devez être connecté en tant qu’acheteur pour effectuer un achat.');
       return;
     }
 
@@ -123,12 +123,12 @@ export class ProductDetailComponent implements OnInit {
 
     this.orderService.createOrder(orderReq).subscribe({
       next: () => {
-        alert('Order placed successfully.');
+        alert('Commande passée avec succès.');
         this.router.navigate(['/buyer/orders']);
       },
       error: (err) => {
         console.error(err);
-        alert('Failed to place order.');
+        alert('Échec de la commande.');
       },
     });
   }

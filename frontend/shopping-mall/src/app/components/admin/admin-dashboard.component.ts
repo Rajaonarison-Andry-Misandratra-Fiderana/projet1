@@ -27,8 +27,8 @@ import { AuthService } from '../../services/auth.service';
       <h2>Products</h2>
       <ul>
         <li *ngFor="let p of products">
-          {{ p.name }} — {{ p.price }} USD
-          <button (click)="deleteProduct(p.id)">Delete</button>
+          {{ p.name }} — {{ p.price | number: '1.0-0' }} MGA
+          <button (click)="deleteProduct(p.id)">Supprimer</button>
         </li>
       </ul>
 
@@ -36,7 +36,7 @@ import { AuthService } from '../../services/auth.service';
       <ul>
         <li *ngFor="let u of sellers">
           {{ u.name }} ({{ u.email }})
-          <button (click)="deleteSeller(u.id)">Delete seller</button>
+          <button (click)="deleteSeller(u.id)">Supprimer vendeur</button>
         </li>
       </ul>
     </div>

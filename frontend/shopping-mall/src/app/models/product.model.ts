@@ -4,6 +4,7 @@ export interface Product {
   name: string;
   price: number;
   stock: number;
+  location?: string;
   description?: string;
   image?: string;
   category?: string;
@@ -42,6 +43,7 @@ export interface CreateProductRequest {
   name: string;
   price: number;
   stock: number;
+  location?: string;
   description?: string;
   image?: string;
   category?: string;
@@ -51,6 +53,7 @@ export interface UpdateProductRequest {
   name?: string;
   price?: number;
   stock?: number;
+  location?: string;
   description?: string;
   image?: string;
   category?: string;

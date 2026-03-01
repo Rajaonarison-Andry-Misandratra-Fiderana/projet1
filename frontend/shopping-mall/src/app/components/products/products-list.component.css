@@ -32,6 +32,24 @@
   background: linear-gradient(120deg, #0f5e9c, #0d86b8);
 }
 
+.header-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.btn-reset {
+  margin-top: 0.9rem;
+  border: 1px solid #c6d8e8;
+  border-radius: 10px;
+  padding: 0.58rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1d4f78;
+  background: #edf5fc;
+}
+
 .products-content {
   display: grid;
   grid-template-columns: 250px 1fr;
@@ -128,6 +146,7 @@
   display: flex;
   flex-direction: column;
   border: 1px solid #dce8f3;
+  cursor: pointer;
 }
 
 .product-card:hover {
@@ -220,19 +239,10 @@
   font-weight: 700;
 }
 
-.btn-view {
-  background: linear-gradient(120deg, #0f5e9c, #0d86b8);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.3s;
+.seller-name {
+  color: #56718a;
   font-size: 0.9rem;
-}
-
-.btn-view:hover {
-  filter: brightness(1.05);
+  font-weight: 600;
 }
 
 .no-products {
@@ -257,6 +267,74 @@
   background: #fadbd8;
   color: #c0392b;
   border-left: 4px solid #e74c3c;
+}
+
+.product-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 28, 45, 0.62);
+  display: grid;
+  place-items: center;
+  z-index: 1200;
+  padding: 1rem;
+}
+
+.product-popup {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+
+.product-popup img {
+  width: 100%;
+  height: 240px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #edf3f8;
+}
+
+.product-popup h3 {
+  margin: 0.8rem 0 0.4rem;
+  color: #0f2338;
+}
+
+.popup-seller,
+.popup-stock {
+  margin: 0.2rem 0;
+  color: #4e6780;
+  font-weight: 600;
+}
+
+.popup-price {
+  margin: 0.3rem 0;
+  color: #0f3a68;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.popup-desc {
+  margin-top: 0.45rem;
+  color: #3f566f;
+}
+
+.popup-close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #20384f;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 @media (max-width: 1024px) {
@@ -309,10 +387,5 @@
   .product-footer {
     flex-direction: column;
     gap: 1rem;
-  }
-
-  .btn-view {
-    width: 100%;
-    text-align: center;
   }
 }

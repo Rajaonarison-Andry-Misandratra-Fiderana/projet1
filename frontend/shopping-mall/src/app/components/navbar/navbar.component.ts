@@ -20,10 +20,6 @@ export class NavbarComponent implements OnInit {
     private router: Router,
   ) {}
 
-  goToProducts(): void {
-    this.router.navigate(['/products']);
-  }
-
   ngOnInit(): void {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;

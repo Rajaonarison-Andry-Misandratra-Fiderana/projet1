@@ -20,10 +20,11 @@
       <div class="card-content">
         <h3>{{ p.name }}</h3>
         <p class="meta">{{ p.category || 'Sans catégorie' }}</p>
-        <p class="price">${{ p.price }} <span>• Stock: {{ p.stock }}</span></p>
+        <p class="meta">Emplacement: {{ p.location || 'Non renseigné' }}</p>
+        <p class="price">{{ p.price | number: '1.0-0' }} MGA <span>• Stock: {{ p.stock }}</span></p>
       </div>
       <div class="card-actions">
-        <button class="btn-secondary" (click)="edit(getProductId(p))">Modifier</button>
+        <button class="btn-secondary" (click)="openEditModal(p)">Modifier</button>
         <button class="btn-danger" (click)="delete(getProductId(p))">Supprimer</button>
       </div>
     </article>
@@ -55,6 +56,11 @@
         </div>
 
         <div class="field">
+          <label>Emplacement (ex: Box 5)</label>
+          <input type="text" [(ngModel)]="newProduct.location" name="location" required />
+        </div>
+
+        <div class="field">
           <label>Catégorie</label>
           <select [(ngModel)]="newProduct.category" name="category" required>
             <option value="">Sélectionner une catégorie</option>
@@ -71,6 +77,39 @@
         <div class="modal-actions">
           <button type="submit" class="btn-primary" [disabled]="!canPublishProduct()">Publier</button>
           <button type="button" class="btn-secondary" (click)="closeCreateModal()">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showEditModal">
+    <div class="modal">
+      <h2>Modifier le produit</h2>
+      <form (submit)="saveEdit($event)">
+        <div class="field">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="editProduct.name" name="editName" required />
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <textarea [(ngModel)]="editProduct.description" name="editDescription" required></textarea>
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label>Prix</label>
+            <input type="number" [(ngModel)]="editProduct.price" name="editPrice" required />
+          </div>
+          <div class="field">
+            <label>Stock</label>
+            <input type="number" [(ngModel)]="editProduct.stock" name="editStock" required />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary" [disabled]="!canSaveEdit()">Enregistrer</button>
+          <button type="button" class="btn-secondary" (click)="closeEditModal()">Annuler</button>
         </div>
       </form>
     </div>

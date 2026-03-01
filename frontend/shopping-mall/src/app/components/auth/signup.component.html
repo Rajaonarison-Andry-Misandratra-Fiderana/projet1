@@ -1,8 +1,8 @@
 <div class="signup-container">
   <div class="signup-card">
     <div class="signup-header">
-      <h1>Create Account</h1>
-      <p>Join our shopping mall community</p>
+      <h1>Créer un compte</h1>
+      <p>Rejoignez notre communauté Shopping Mall</p>
     </div>
 
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
@@ -15,77 +15,77 @@
       </div>
 
       <div class="form-group">
-        <label for="name">Full Name</label>
+        <label for="name">Nom complet</label>
         <input
           type="text"
           id="name"
           formControlName="name"
           class="form-control"
-          placeholder="Enter your full name"
+          placeholder="Entrez votre nom complet"
           [class.is-invalid]="submitted && f['name'].errors"
         >
         <div *ngIf="submitted && f['name'].errors" class="error-message">
-          <span *ngIf="f['name'].errors['required']">Name is required</span>
-          <span *ngIf="f['name'].errors['minlength']">Name must be at least 3 characters</span>
+          <span *ngIf="f['name'].errors['required']">Le nom est requis</span>
+          <span *ngIf="f['name'].errors['minlength']">Le nom doit contenir au moins 3 caractères</span>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="email">Email Address</label>
+        <label for="email">Adresse e-mail</label>
         <input
           type="email"
           id="email"
           formControlName="email"
           class="form-control"
-          placeholder="Enter your email"
+          placeholder="Entrez votre e-mail"
           [class.is-invalid]="submitted && f['email'].errors"
         >
         <div *ngIf="submitted && f['email'].errors" class="error-message">
-          <span *ngIf="f['email'].errors['required']">Email is required</span>
-          <span *ngIf="f['email'].errors['email']">Email must be valid</span>
+          <span *ngIf="f['email'].errors['required']">L'e-mail est requis</span>
+          <span *ngIf="f['email'].errors['email']">Format e-mail invalide</span>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">Mot de passe</label>
         <input
           type="password"
           id="password"
           formControlName="password"
           class="form-control"
-          placeholder="Enter your password"
+          placeholder="Entrez votre mot de passe"
           [class.is-invalid]="submitted && f['password'].errors"
         >
         <div *ngIf="submitted && f['password'].errors" class="error-message">
-          <span *ngIf="f['password'].errors['required']">Password is required</span>
-          <span *ngIf="f['password'].errors['minlength']">Password must be at least 6 characters</span>
+          <span *ngIf="f['password'].errors['required']">Le mot de passe est requis</span>
+          <span *ngIf="f['password'].errors['minlength']">Au moins 6 caractères</span>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="confirmPassword">Confirm Password</label>
+        <label for="confirmPassword">Confirmer le mot de passe</label>
         <input
           type="password"
           id="confirmPassword"
           formControlName="confirmPassword"
           class="form-control"
-          placeholder="Confirm your password"
+          placeholder="Confirmez votre mot de passe"
           [class.is-invalid]="submitted && (f['confirmPassword'].errors || signupForm.errors)"
         >
         <div *ngIf="submitted && signupForm.errors" class="error-message">
-          <span *ngIf="signupForm.errors['passwordMismatch']">Passwords do not match</span>
+          <span *ngIf="signupForm.errors['passwordMismatch']">Les mots de passe ne correspondent pas</span>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="role">Account Type</label>
+        <label for="role">Type de compte</label>
         <select
           id="role"
           formControlName="role"
           class="form-control"
         >
-          <option value="acheteur">Buyer</option>
-          <option value="boutique">Shop Owner</option>
+          <option value="acheteur">Acheteur</option>
+          <option value="boutique">Boutique</option>
         </select>
       </div>
 
@@ -94,12 +94,12 @@
         class="btn-signup"
         [disabled]="loading"
       >
-        {{ loading ? 'Creating Account...' : 'Create Account' }}
+        {{ loading ? 'Création du compte...' : 'Créer un compte' }}
       </button>
     </form>
 
     <div class="signup-footer">
-      <p>Already have an account? <a routerLink="/login">Sign in here</a></p>
+      <p>Vous avez déjà un compte ? <a routerLink="/login">Connectez-vous</a></p>
     </div>
   </div>
 </div>
