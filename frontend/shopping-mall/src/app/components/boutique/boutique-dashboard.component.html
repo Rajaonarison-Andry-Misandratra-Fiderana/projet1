@@ -1,0 +1,74 @@
+<section class="seller-dashboard">
+  <header class="dashboard-header">
+    <h1>Tableau de bord boutique</h1>
+    <p>Performance de vos offres: visibilité, ventes et stock.</p>
+  </header>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div class="stats-grid">
+    <article class="stat-card">
+      <p class="label">Produits</p>
+      <p class="value">{{ productsCount }}</p>
+    </article>
+
+    <article class="stat-card">
+      <p class="label">Commandes</p>
+      <p class="value">{{ ordersCount }}</p>
+    </article>
+
+    <article class="stat-card">
+      <p class="label">Unités vendues</p>
+      <p class="value">{{ unitsSoldTotal }}</p>
+    </article>
+
+    <article class="stat-card">
+      <p class="label">Clics produits</p>
+      <p class="value">{{ totalClicks }}</p>
+    </article>
+
+    <article class="stat-card big">
+      <p class="label">Chiffre d'affaires</p>
+      <p class="value">${{ totalSales.toFixed(2) }}</p>
+    </article>
+  </div>
+
+  <div *ngIf="loading" class="loading-panel">Chargement des statistiques boutique...</div>
+
+  <section *ngIf="!loading" class="table-section">
+    <h2>Produits et performance</h2>
+
+    <div *ngIf="productRows.length === 0" class="empty">Aucun produit à afficher.</div>
+
+    <div *ngIf="productRows.length > 0" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Stock</th>
+            <th>Clics</th>
+            <th>Ventes</th>
+            <th>Commandes</th>
+            <th>Revenu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of productRows">
+            <td>{{ row.name }}</td>
+            <td>{{ row.category }}</td>
+            <td>${{ row.price }}</td>
+            <td>{{ row.stock }}</td>
+            <td>{{ row.clicks }}</td>
+            <td>{{ row.unitsSold }}</td>
+            <td>{{ row.orderCount }}</td>
+            <td>${{ row.salesAmount.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

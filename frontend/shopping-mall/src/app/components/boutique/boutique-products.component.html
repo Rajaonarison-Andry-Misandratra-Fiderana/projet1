@@ -1,0 +1,78 @@
+<section class="boutique-products">
+  <header class="page-header">
+    <div>
+      <h1>Mes produits</h1>
+      <p>Gérez votre catalogue et vos disponibilités.</p>
+    </div>
+    <button *ngIf="isSeller" class="btn-primary" (click)="openCreateModal()">Ajouter un produit</button>
+  </header>
+
+  <div *ngIf="loading" class="status-panel">Chargement des produits...</div>
+  <div *ngIf="error" class="status-panel error">{{ error }}</div>
+
+  <div *ngIf="!loading && products.length === 0" class="empty-state">
+    Aucun produit disponible pour cette boutique.
+  </div>
+
+  <div *ngIf="!loading && products.length > 0" class="products-grid">
+    <article *ngFor="let p of products" class="product-card">
+      <img [src]="p.image || '/assets/placeholder.png'" alt="{{ p.name }}" />
+      <div class="card-content">
+        <h3>{{ p.name }}</h3>
+        <p class="meta">{{ p.category || 'Sans catégorie' }}</p>
+        <p class="price">${{ p.price }} <span>• Stock: {{ p.stock }}</span></p>
+      </div>
+      <div class="card-actions">
+        <button class="btn-secondary" (click)="edit(getProductId(p))">Modifier</button>
+        <button class="btn-danger" (click)="delete(getProductId(p))">Supprimer</button>
+      </div>
+    </article>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showCreateModal">
+    <div class="modal">
+      <h2>Nouveau produit</h2>
+      <form (submit)="createProduct($event)">
+        <div class="field">
+          <label>Nom</label>
+          <input type="text" [(ngModel)]="newProduct.name" name="name" required />
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <textarea [(ngModel)]="newProduct.description" name="description" required></textarea>
+        </div>
+
+        <div class="split">
+          <div class="field">
+            <label>Prix</label>
+            <input type="number" [(ngModel)]="newProduct.price" name="price" required />
+          </div>
+          <div class="field">
+            <label>Stock</label>
+            <input type="number" [(ngModel)]="newProduct.stock" name="stock" required />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Catégorie</label>
+          <select [(ngModel)]="newProduct.category" name="category" required>
+            <option value="">Sélectionner une catégorie</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Image</label>
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" required />
+          <img *ngIf="previewImage" [src]="previewImage" class="preview" alt="Aperçu" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary" [disabled]="!canPublishProduct()">Publier</button>
+          <button type="button" class="btn-secondary" (click)="closeCreateModal()">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

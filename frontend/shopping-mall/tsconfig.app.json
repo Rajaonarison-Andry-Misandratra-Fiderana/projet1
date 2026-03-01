@@ -4,10 +4,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
+    "allowJs": true,
     "types": []
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.js"
   ],
   "exclude": [
     "src/**/*.spec.ts"

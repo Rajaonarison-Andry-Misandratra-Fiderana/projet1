@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../models/product.model';
 import { API_BASE_URL } from '../config/api.config';
 
@@ -9,6 +10,8 @@ import { API_BASE_URL } from '../config/api.config';
 })
 export class ProductService {
   private apiUrl = `${API_BASE_URL}/products`;
+  private refreshSubject = new Subject<void>();
+  public refresh$ = this.refreshSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -39,15 +42,21 @@ export class ProductService {
   }
 
   createProduct(request: CreateProductRequest): Observable<Product> {
-    return this.http.post<Product>(this.apiUrl, request);
+    return this.http
+      .post<Product>(this.apiUrl, request)
+      .pipe(tap(() => this.refreshSubject.next()));
   }
 
   updateProduct(id: string, request: UpdateProductRequest): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, request);
+    return this.http
+      .put<Product>(`${this.apiUrl}/${id}`, request)
+      .pipe(tap(() => this.refreshSubject.next()));
   }
 
   deleteProduct(id: string): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    return this.http
+      .delete<any>(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.refreshSubject.next()));
   }
 
   addReview(productId: string, review: { comment: string; rating: number }): Observable<Product> {

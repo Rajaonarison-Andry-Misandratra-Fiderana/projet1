@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { getEntityId } from '../../utils/id.util';
+import { PRODUCT_CATEGORIES } from '../../constants/categories';
 
 @Component({
   selector: 'app-products-list',
@@ -13,7 +16,7 @@ import { getEntityId } from '../../utils/id.util';
   templateUrl: './products-list.component.html',
   styleUrls: ['./products-list.component.css'],
 })
-export class ProductsListComponent implements OnInit {
+export class ProductsListComponent implements OnInit, OnDestroy {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   loading = false;
@@ -22,27 +25,53 @@ export class ProductsListComponent implements OnInit {
   selectedCategory = '';
   minPrice = 0;
   maxPrice = 10000;
+  private destroy$ = new Subject<void>();
 
-  categories = ['Fashion', 'Electronics', 'Home & Garden', 'Books', 'Sports', 'Beauty'];
-  constructor(private productService: ProductService) {}
+  categories = PRODUCT_CATEGORIES;
+  constructor(
+    private productService: ProductService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
+
+    // Reload when products change (create/update/delete elsewhere)
+    this.productService.refresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadProducts());
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        filter((event) => event.urlAfterRedirects.startsWith('/products')),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(() => this.loadProducts());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadProducts(): void {
     this.loading = true;
+    this.error = '';
     this.productService.getProducts().subscribe({
       next: (products) => {
         this.products = products;
         this.applyFilters();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = error?.error?.message || 'Failed to load products from API.';
         this.products = [];
         this.applyFilters();
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }

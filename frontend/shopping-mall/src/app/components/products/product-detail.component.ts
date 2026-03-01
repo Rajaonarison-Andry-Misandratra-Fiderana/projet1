@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
 import { Product } from '../../models/product.model';
 import { getEntityId } from '../../utils/id.util';
+import { incrementProductClick } from '../../utils/product-clicks.util';
 
 @Component({
   selector: 'app-product-detail',
@@ -76,7 +77,11 @@ export class ProductDetailComponent implements OnInit {
     this.productId = this.route.snapshot.paramMap.get('id');
     if (this.productId) {
       this.productService.getProductById(this.productId).subscribe({
-        next: (p) => (this.product = p),
+        next: (p) => {
+          this.product = p;
+          const id = getEntityId(p);
+          if (id) incrementProductClick(id);
+        },
         error: () => (this.product = null),
       });
     }

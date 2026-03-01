@@ -39,7 +39,7 @@
           <div class="nav-dropdown">
             <button class="nav-link dropdown-toggle">
               {{ currentUser.role === 'admin' ? '⚙️ Admin' : currentUser.role === 'boutique' ? '🏪 Boutique' : '🛒
-              Dashboard' }}
+              Menu' }}
             </button>
             <div class="dropdown-menu">
               <a *ngIf="isAdmin()" routerLink="/admin/dashboard" class="dropdown-item">
