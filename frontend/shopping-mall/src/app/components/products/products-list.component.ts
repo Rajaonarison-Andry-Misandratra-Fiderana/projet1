@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 import { PRODUCTS as FALLBACK_PRODUCTS } from '../../mock/seed';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-products-list',
@@ -25,10 +26,16 @@ export class ProductsListComponent implements OnInit {
 
   categories = ['Fashion', 'Electronics', 'Home & Garden', 'Books', 'Sports', 'Beauty'];
 
-  constructor(private productService: ProductService) {}
+  isSeller = false;
+
+  constructor(
+    private productService: ProductService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
+    this.isSeller = this.authService.hasRole(['boutique']);
   }
 
   loadProducts(): void {

@@ -3,7 +3,6 @@
     <div class="navbar-brand">
       <a routerLink="/" class="brand-link">
         <span class="brand-icon">🛍️</span>
-        <span class="brand-text">Shopping Mall</span>
       </a>
     </div>
 
@@ -14,23 +13,30 @@
     </button>
 
     <div class="navbar-menu" [class.active]="isMenuOpen">
-      <div class="navbar-start">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
-          Home
-        </a>
-        <a routerLink="/products" routerLinkActive="active" class="nav-link">
-          Products
-        </a>
+      <!-- Section navbar-start vide car Maison et Produit ont été supprimés -->
+      <div class="navbar-start"></div>
+
+      <div class="navbar-center">
+        <input class="nav-search" type="search" placeholder="Rechercher des produits..." (focus)="goToProducts()" />
       </div>
 
       <div class="navbar-end">
         <ng-container *ngIf="!currentUser">
           <a routerLink="/login" routerLinkActive="active" class="nav-link">
-            Login
+            Connexion
           </a>
           <a routerLink="/signup" routerLinkActive="active" class="nav-link btn-signup">
-            Sign Up
+            S'inscrire
           </a>
+
+          <div class="quick-login">
+            <button class="nav-link" (click)="showQuickLogin = !showQuickLogin">Démo rapide</button>
+            <div class="quick-menu" *ngIf="showQuickLogin">
+              <button class="dropdown-item" *ngFor="let u of seedUsers" (click)="quickLogin(u)">
+                {{ u.name }} — {{ u.role }}
+              </button>
+            </div>
+          </div>
         </ng-container>
 
         <ng-container *ngIf="currentUser">
@@ -41,30 +47,31 @@
 
           <div class="nav-dropdown">
             <button class="nav-link dropdown-toggle">
-              {{ currentUser.role === 'admin' ? '⚙️ Admin' : currentUser.role === 'boutique' ? '🏪 Shop' : '🛒 Dashboard' }}
+              {{ currentUser.role === 'admin' ? '⚙️ Admin' : currentUser.role === 'boutique' ? '🏪 Boutique' : '🛒
+              Dashboard' }}
             </button>
             <div class="dropdown-menu">
               <a *ngIf="isAdmin()" routerLink="/admin/dashboard" class="dropdown-item">
-                Admin Dashboard
+                Tableau de bord Admin
               </a>
               <a *ngIf="isAdmin()" routerLink="/admin/users" class="dropdown-item">
-                Manage Users
+                Gérer les utilisateurs
               </a>
               <a *ngIf="isBoutique()" routerLink="/boutique/dashboard" class="dropdown-item">
-                Shop Dashboard
+                Tableau de bord Boutique
               </a>
               <a *ngIf="isBoutique()" routerLink="/boutique/products" class="dropdown-item">
-                My Products
+                Mes produits
               </a>
               <a *ngIf="isAcheteur()" routerLink="/buyer/orders" class="dropdown-item">
-                My Orders
+                Mes commandes
               </a>
               <a routerLink="/profile" class="dropdown-item">
-                Profile
+                Profil
               </a>
               <hr class="dropdown-divider">
               <button (click)="logout()" class="dropdown-item logout">
-                Logout
+                Déconnexion
               </button>
             </div>
           </div>
