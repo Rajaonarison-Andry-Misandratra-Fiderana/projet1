@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { User, AuthResponse, LoginRequest, SignupRequest } from '../models/user.model';
 import { API_BASE_URL } from '../config/api.config';
 
@@ -86,7 +86,20 @@ export class AuthService {
   }
 
   getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl);
+    return this.http.get<unknown>(this.apiUrl).pipe(
+      map((response) => {
+        const users = this.extractUsers(response);
+        return users.map((u) => ({
+          id: u.id || u._id,
+          _id: u._id || u.id,
+          name: u.name || '',
+          email: u.email || '',
+          role: (u.role || 'acheteur') as User['role'],
+          createdAt: u.createdAt,
+          updatedAt: u.updatedAt,
+        }));
+      }),
+    );
   }
 
   updateUser(id: string, payload: Partial<Pick<User, 'name' | 'email' | 'role'>>): Observable<User> {
@@ -113,5 +126,14 @@ export class AuthService {
   private isLikelyJwt(token: string | null): token is string {
     if (!token) return false;
     return token.split('.').length === 3;
+  }
+
+  private extractUsers(response: unknown): User[] {
+    if (Array.isArray(response)) return response as User[];
+    const asObject = response as { users?: User[]; data?: User[]; result?: User[] };
+    if (Array.isArray(asObject?.users)) return asObject.users;
+    if (Array.isArray(asObject?.data)) return asObject.data;
+    if (Array.isArray(asObject?.result)) return asObject.result;
+    return [];
   }
 }

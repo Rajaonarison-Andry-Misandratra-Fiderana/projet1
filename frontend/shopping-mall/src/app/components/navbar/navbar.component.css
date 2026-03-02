@@ -650,6 +650,7 @@
   }
 }
 
+/* hide/show behavior controlled by host class 'nav-hidden' */
 /* Animation */
 @keyframes slideDown {
   from {

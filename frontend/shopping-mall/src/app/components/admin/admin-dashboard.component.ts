@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, forkJoin, merge, of, timer } from 'rxjs';
-import { catchError, takeUntil } from 'rxjs/operators';
+import { NavigationEnd, Router } from '@angular/router';
+import { EMPTY, Subject, forkJoin, fromEvent, merge, of, timer } from 'rxjs';
+import { catchError, filter, takeUntil } from 'rxjs/operators';
 import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
@@ -34,27 +35,27 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
 
       <div class="stats-grid" *ngIf="!loading">
         <article class="stat-card">
-          <p class="label">Utilisateurs</p>
-          <p class="value">{{ users.length }}</p>
-          <p class="meta">Admins {{ adminsCount }} • Boutiques {{ boutiquesCount }} • Acheteurs {{ buyersCount }}</p>
+          <p class="label">Chiffre d'affaire</p>
+          <p class="value">{{ paidRevenue | number: '1.0-0' }} MGA</p>
+          <p class="meta">Paiements complétés</p>
         </article>
 
         <article class="stat-card">
-          <p class="label">Produits</p>
-          <p class="value">{{ products.length }}</p>
-          <p class="meta">Stock total {{ totalStock }}</p>
+          <p class="label">Nombre de vendeurs</p>
+          <p class="value">{{ boutiquesCount }}</p>
+          <p class="meta">Comptes rôle boutique</p>
         </article>
 
         <article class="stat-card">
-          <p class="label">Commandes</p>
-          <p class="value">{{ orders.length }}</p>
-          <p class="meta">En attente {{ pendingOrdersCount }}</p>
+          <p class="label">Nombre de places encore libres</p>
+          <p class="value">{{ freeSellerSlots }}</p>
+          <p class="meta">Capacité vendeurs: {{ sellerCapacity }}</p>
         </article>
 
         <article class="stat-card success">
-          <p class="label">Revenu payé</p>
-          <p class="value">{{ paidRevenue | number: '1.0-0' }} MGA</p>
-          <p class="meta">Total global</p>
+          <p class="label">Nombre d'acheteurs</p>
+          <p class="value">{{ buyersCount }}</p>
+          <p class="meta">Comptes rôle acheteur</p>
         </article>
       </div>
 
@@ -377,6 +378,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   loading = true;
   error = '';
+  apiBaseUrl = '';
+  sellerCapacity = this.resolveSellerCapacity();
 
   savingOrders = new Set<string>();
   savingUsers = new Set<string>();
@@ -389,19 +392,33 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private productService: ProductService,
     private orderService: OrderService,
+    private router: Router,
   ) {}
 
   readonly getEntityId = getEntityId;
 
   ngOnInit(): void {
+    this.apiBaseUrl = this.authService.apiBaseUrl;
     this.currentAdminId = getEntityId(this.authService.currentUserValue);
-    this.loadDashboard();
+    this.loadDashboard(true);
+    const focus$ =
+      typeof window !== 'undefined' ? fromEvent(window, 'focus') : EMPTY;
+    const visibility$ =
+      typeof document !== 'undefined'
+        ? fromEvent(document, 'visibilitychange').pipe(filter(() => !document.hidden))
+        : EMPTY;
 
     merge(
       this.authService.usersRefresh$,
       this.productService.refresh$,
       this.orderService.refresh$,
-      timer(15000, 15000),
+      timer(0, 5000),
+      focus$,
+      visibility$,
+      this.router.events.pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        filter((event) => event.urlAfterRedirects.startsWith('/admin/dashboard')),
+      ),
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadDashboard(false));
@@ -422,6 +439,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   get buyersCount(): number {
     return this.users.filter((u) => u.role === 'acheteur').length;
+  }
+
+  get freeSellerSlots(): number {
+    return Math.max(0, this.sellerCapacity - this.boutiquesCount);
   }
 
   get totalStock(): number {
@@ -461,14 +482,27 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.error = '';
 
     forkJoin({
-      users: this.authService.getAllUsers().pipe(catchError(() => of([] as User[]))),
-      products: this.productService.getProducts().pipe(catchError(() => of([] as Product[]))),
-      orders: this.orderService.getAllOrders().pipe(catchError(() => of([] as Order[]))),
+      users: this.authService.getAllUsers().pipe(catchError((err) => of({ __error: err } as const))),
+      products: this.productService.getProducts().pipe(catchError((err) => of({ __error: err } as const))),
+      orders: this.orderService.getAllOrders().pipe(catchError((err) => of({ __error: err } as const))),
     }).subscribe({
       next: ({ users, products, orders }) => {
-        this.users = this.normalizeUsersResponse(users as unknown);
-        this.products = Array.isArray(products) ? products : [];
-        this.orders = Array.isArray(orders) ? orders : [];
+        const userError = this.extractError(users);
+        const productError = this.extractError(products);
+        const orderError = this.extractError(orders);
+
+        this.users = userError ? [] : this.normalizeUsersResponse(users as unknown);
+        this.products = productError ? [] : this.normalizeProductsResponse(products as unknown);
+        this.orders = orderError ? [] : this.normalizeOrdersResponse(orders as unknown);
+
+        const parts: string[] = [];
+        if (userError) parts.push('Utilisateurs');
+        if (productError) parts.push('Produits');
+        if (orderError) parts.push('Commandes');
+        if (parts.length > 0) {
+          this.error = `Certaines données n'ont pas pu être chargées: ${parts.join(', ')}.`;
+        }
+
         this.loading = false;
       },
       error: (err) => {
@@ -570,8 +604,43 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   private normalizeUsersResponse(value: unknown): User[] {
     if (Array.isArray(value)) return value as User[];
-    const maybeObject = value as { users?: User[] };
+    const maybeObject = value as { users?: User[]; data?: User[] };
     if (Array.isArray(maybeObject?.users)) return maybeObject.users;
+    if (Array.isArray(maybeObject?.data)) return maybeObject.data;
     return [];
   }
+
+  private normalizeProductsResponse(value: unknown): Product[] {
+    if (Array.isArray(value)) return value as Product[];
+    const maybeObject = value as { products?: Product[]; data?: Product[] };
+    if (Array.isArray(maybeObject?.products)) return maybeObject.products;
+    if (Array.isArray(maybeObject?.data)) return maybeObject.data;
+    return [];
+  }
+
+  private normalizeOrdersResponse(value: unknown): Order[] {
+    if (Array.isArray(value)) return value as Order[];
+    const maybeObject = value as { orders?: Order[]; data?: Order[] };
+    if (Array.isArray(maybeObject?.orders)) return maybeObject.orders;
+    if (Array.isArray(maybeObject?.data)) return maybeObject.data;
+    return [];
+  }
+
+  private extractError<T>(value: T): unknown {
+    if (!value || typeof value !== 'object') return null;
+    const maybe = value as { __error?: unknown };
+    return maybe.__error || null;
+  }
+
+  private resolveSellerCapacity(): number {
+    const byWindow = (globalThis as { __SHOPPING_MALL_MAX_SELLERS__?: number }).__SHOPPING_MALL_MAX_SELLERS__;
+    if (typeof byWindow === 'number' && byWindow > 0) return Math.floor(byWindow);
+
+    const byStorage = globalThis.localStorage?.getItem('shoppingMallMaxSellers');
+    const parsed = Number(byStorage);
+    if (!Number.isNaN(parsed) && parsed > 0) return Math.floor(parsed);
+
+    return 100;
+  }
+
 }

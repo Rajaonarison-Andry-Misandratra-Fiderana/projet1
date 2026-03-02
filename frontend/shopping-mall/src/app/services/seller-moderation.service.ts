@@ -5,11 +5,11 @@ import { Subject } from 'rxjs';
   providedIn: 'root',
 })
 export class SellerModerationService {
-  private readonly storageKey = 'shoppingMallBannedSellers';
+  private readonly storageKey = 'shoppingMallBannedUsers';
   private readonly refreshSubject = new Subject<void>();
   readonly refresh$ = this.refreshSubject.asObservable();
 
-  getBannedSellerIds(): string[] {
+  getBannedUserIds(): string[] {
     const raw = this.safeGet(this.storageKey);
     if (!raw) return [];
     try {
@@ -20,23 +20,40 @@ export class SellerModerationService {
     }
   }
 
+  isUserBanned(userId: string): boolean {
+    if (!userId) return false;
+    return this.getBannedUserIds().includes(userId);
+  }
+
+  banUser(userId: string): void {
+    if (!userId) return;
+    const current = this.getBannedUserIds();
+    if (current.includes(userId)) return;
+    const next = [...current, userId];
+    this.persist(next);
+  }
+
+  unbanUser(userId: string): void {
+    if (!userId) return;
+    const next = this.getBannedUserIds().filter((id) => id !== userId);
+    this.persist(next);
+  }
+
+  // Backward compatibility
+  getBannedSellerIds(): string[] {
+    return this.getBannedUserIds();
+  }
+
   isSellerBanned(sellerId: string): boolean {
-    if (!sellerId) return false;
-    return this.getBannedSellerIds().includes(sellerId);
+    return this.isUserBanned(sellerId);
   }
 
   banSeller(sellerId: string): void {
-    if (!sellerId) return;
-    const current = this.getBannedSellerIds();
-    if (current.includes(sellerId)) return;
-    const next = [...current, sellerId];
-    this.persist(next);
+    this.banUser(sellerId);
   }
 
   unbanSeller(sellerId: string): void {
-    if (!sellerId) return;
-    const next = this.getBannedSellerIds().filter((id) => id !== sellerId);
-    this.persist(next);
+    this.unbanUser(sellerId);
   }
 
   private persist(ids: string[]): void {

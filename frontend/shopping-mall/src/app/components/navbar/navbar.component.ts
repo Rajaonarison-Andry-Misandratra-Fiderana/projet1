@@ -27,17 +27,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((user) => {
-        this.currentUser = user;
-      });
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+      this.currentUser = user;
+    });
 
-    this.cartService.items$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((items) => {
-        this.cartCount = items.reduce((total, item) => total + item.quantity, 0);
-      });
+    this.cartService.items$.pipe(takeUntil(this.destroy$)).subscribe((items) => {
+      this.cartCount = items.reduce((total, item) => total + item.quantity, 0);
+    });
   }
 
   ngOnDestroy(): void {
