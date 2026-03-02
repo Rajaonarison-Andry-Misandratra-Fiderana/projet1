@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
@@ -116,48 +116,49 @@ type UserRow = {
             <div *ngIf="historyError" class="panel error">{{ historyError }}</div>
 
             <ng-container *ngIf="!historyLoading && !historyError">
-            <!-- User Info -->
-            <div class="info-section">
-              <h3>Informations</h3>
-              <p><strong>Nom:</strong> {{ selectedUserHistory.user.name }}</p>
-              <p><strong>Email:</strong> {{ selectedUserHistory.user.email }}</p>
-              <p><strong>Rôle:</strong> {{ selectedUserHistory.user.role }}</p>
-              <p>
-                <strong>Inscrit:</strong>
-                {{ selectedUserHistory.user.createdAt | date: 'dd/MM/yyyy HH:mm' }}
-              </p>
-            </div>
-
-            <!-- Orders -->
-            <div class="info-section">
-              <h3>Commandes ({{ selectedUserHistory.orders.length }})</h3>
-              <div *ngIf="selectedUserHistory.orders.length === 0" class="empty-msg">
-                Aucune commande
+              <!-- User Info -->
+              <div class="info-section">
+                <h3>Informations</h3>
+                <p><strong>Nom:</strong> {{ selectedUserHistory.user.name }}</p>
+                <p><strong>Email:</strong> {{ selectedUserHistory.user.email }}</p>
+                <p><strong>Rôle:</strong> {{ selectedUserHistory.user.role }}</p>
+                <p>
+                  <strong>Inscrit:</strong>
+                  {{ selectedUserHistory.user.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                </p>
               </div>
-              <ul class="list-items" *ngIf="selectedUserHistory.orders.length > 0">
-                <li *ngFor="let order of selectedUserHistory.orders" class="list-item">
-                  <strong>{{ order.id }}</strong> — {{ order.quantity }} produit(s) •
-                  {{ order.totalPrice | number: '1.0-0' }} MGA
-                  <span class="status" [class]="'status-' + order.orderStatus">{{
-                    order.orderStatus
-                  }}</span>
-                </li>
-              </ul>
-            </div>
 
-            <!-- Products -->
-            <div class="info-section">
-              <h3>Produits créés ({{ selectedUserHistory.products.length }})</h3>
-              <div *ngIf="selectedUserHistory.products.length === 0" class="empty-msg">
-                Aucun produit
+              <!-- Orders -->
+              <div class="info-section">
+                <h3>Commandes ({{ selectedUserHistory.orders.length }})</h3>
+                <div *ngIf="selectedUserHistory.orders.length === 0" class="empty-msg">
+                  Aucune commande
+                </div>
+                <ul class="list-items" *ngIf="selectedUserHistory.orders.length > 0">
+                  <li *ngFor="let order of selectedUserHistory.orders" class="list-item">
+                    <strong>{{ order.id }}</strong> — {{ order.quantity }} produit(s) •
+                    {{ order.totalPrice | number: '1.0-0' }} MGA
+                    <span class="status" [class]="'status-' + order.orderStatus">{{
+                      order.orderStatus
+                    }}</span>
+                  </li>
+                </ul>
               </div>
-              <ul class="list-items" *ngIf="selectedUserHistory.products.length > 0">
-                <li *ngFor="let prod of selectedUserHistory.products" class="list-item">
-                  <strong>{{ prod.name }}</strong> — {{ prod.price | number: '1.0-0' }} MGA • Stock:
-                  {{ prod.stock }}
-                </li>
-              </ul>
-            </div>
+
+              <!-- Products -->
+              <div class="info-section">
+                <h3>Produits créés ({{ selectedUserHistory.products.length }})</h3>
+                <div *ngIf="selectedUserHistory.products.length === 0" class="empty-msg">
+                  Aucun produit
+                </div>
+                <ul class="list-items" *ngIf="selectedUserHistory.products.length > 0">
+                  <li *ngFor="let prod of selectedUserHistory.products" class="list-item">
+                    <strong>{{ prod.name }}</strong> — {{ prod.price | number: '1.0-0' }} MGA •
+                    Stock:
+                    {{ prod.stock }}
+                  </li>
+                </ul>
+              </div>
             </ng-container>
           </div>
           <div class="modal-footer">
@@ -436,14 +437,14 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private productService: ProductService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.apiBaseUrl = this.authService.apiBaseUrl;
     this.currentAdminId = getEntityId(this.authService.currentUserValue);
     this.loadUsers(true);
-    const focus$ =
-      typeof window !== 'undefined' ? fromEvent(window, 'focus') : EMPTY;
+    const focus$ = typeof window !== 'undefined' ? fromEvent(window, 'focus') : EMPTY;
     const visibility$ =
       typeof document !== 'undefined'
         ? fromEvent(document, 'visibilitychange').pipe(filter(() => !document.hidden))
@@ -454,7 +455,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       this.moderationService.refresh$,
       this.productService.refresh$,
       this.orderService.refresh$,
-      timer(0, 5000),
+      timer(5000, 5000),
       focus$,
       visibility$,
       this.router.events.pipe(
@@ -488,6 +489,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
         });
         this.applyFilters();
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         if (err?.status === 401 || err?.status === 403) {
@@ -599,5 +601,4 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       },
     });
   }
-
 }

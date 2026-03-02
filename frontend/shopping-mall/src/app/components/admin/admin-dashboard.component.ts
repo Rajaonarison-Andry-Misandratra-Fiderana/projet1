@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
@@ -217,32 +217,51 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
   styles: [
     `
       .admin-page {
-        max-width: 1240px;
-        margin: 1.4rem auto;
-        padding: 0 1rem;
+        max-width: 1280px;
+        margin: 1rem auto 1.5rem;
+        padding: 0 1rem 1rem;
+        box-sizing: border-box;
+        background:
+          radial-gradient(circle at 8% -8%, #eaf5ff 0%, transparent 26%),
+          radial-gradient(circle at 90% 0%, #edfff6 0%, transparent 24%);
+      }
+      .admin-page * {
+        box-sizing: border-box;
       }
       .page-head {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 0.8rem;
+        gap: 1rem;
+        border: 1px solid #d8e6f3;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 10px 22px rgba(8, 39, 67, 0.08);
+        padding: 0.95rem 1rem;
       }
       .page-head h1 {
         margin: 0;
         color: #10243a;
+        font-size: clamp(1.15rem, 2.3vw, 1.85rem);
       }
       .page-head p {
         margin: 0.25rem 0 0;
         color: #4f6b84;
+        font-size: 0.92rem;
       }
       .btn-refresh {
         border: 0;
-        border-radius: 10px;
-        padding: 0.6rem 0.9rem;
+        border-radius: 11px;
+        padding: 0.62rem 1rem;
         background: linear-gradient(120deg, #0f5e9c, #0d86b8);
         color: #fff;
         font-weight: 700;
         cursor: pointer;
+        white-space: nowrap;
+      }
+      .btn-refresh:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
       .alert {
         margin-top: 0.9rem;
@@ -255,16 +274,17 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
         background: #fdeaea;
       }
       .stats-grid {
-        margin-top: 0.9rem;
+        margin-top: 1rem;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 0.7rem;
+        gap: 0.85rem;
       }
       .stat-card {
-        border: 1px solid #d8e5f0;
-        border-radius: 12px;
+        border: 1px solid #d3e3f1;
+        border-radius: 14px;
         background: #fff;
-        padding: 0.85rem 0.9rem;
+        box-shadow: 0 8px 20px rgba(8, 39, 67, 0.07);
+        padding: 0.9rem 0.95rem;
       }
       .stat-card.success {
         border-color: #c7e8da;
@@ -277,9 +297,9 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
         font-weight: 700;
       }
       .value {
-        margin: 0.2rem 0 0;
+        margin: 0.18rem 0 0;
         color: #112940;
-        font-size: 1.3rem;
+        font-size: clamp(1.15rem, 2.5vw, 1.45rem);
         font-weight: 800;
       }
       .meta {
@@ -288,17 +308,20 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
         font-size: 0.8rem;
       }
       .panel {
-        margin-top: 0.9rem;
-        border: 1px solid #d8e5f0;
+        margin-top: 1rem;
+        border: 1px solid #d3e3f1;
         border-radius: 14px;
         background: #fff;
-        box-shadow: 0 10px 24px rgba(11, 42, 70, 0.06);
-        padding: 0.9rem;
+        box-shadow: 0 10px 24px rgba(8, 39, 67, 0.06);
+        padding: 0.95rem;
+        overflow: hidden;
+        min-width: 0;
       }
       .grid-2 {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.8rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        min-width: 0;
       }
       .panel-head h2 {
         margin: 0 0 0.7rem;
@@ -307,11 +330,15 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
       }
       .table-wrap {
         overflow-x: auto;
+        border: 1px solid #e3edf6;
+        border-radius: 12px;
+        background: #fff;
       }
       table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 760px;
+        min-width: 720px;
+        table-layout: fixed;
       }
       thead th {
         text-align: left;
@@ -319,20 +346,31 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
         text-transform: uppercase;
         letter-spacing: 0.04em;
         color: #5b748d;
-        border-bottom: 1px solid #dce8f2;
-        padding: 0.65rem 0.45rem;
+        border-bottom: 1px solid #deebf5;
+        padding: 0.62rem 0.5rem;
+        background: #f5faff;
+        position: sticky;
+        top: 0;
+        z-index: 1;
       }
       tbody td {
-        padding: 0.62rem 0.45rem;
+        padding: 0.62rem 0.5rem;
         border-bottom: 1px solid #ebf2f8;
         color: #12304c;
         font-weight: 600;
+        vertical-align: middle;
+        word-break: break-word;
+      }
+      tbody tr:hover {
+        background: #f8fcff;
       }
       select {
         border: 1px solid #c9dced;
         border-radius: 8px;
         padding: 0.28rem 0.42rem;
         font: inherit;
+        max-width: 132px;
+        width: 100%;
       }
       .btn-inline,
       .btn-delete {
@@ -341,6 +379,7 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
         padding: 0.4rem 0.52rem;
         font-weight: 700;
         cursor: pointer;
+        white-space: nowrap;
       }
       .btn-inline {
         background: #e8f5ff;
@@ -356,16 +395,61 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
         padding: 1rem;
       }
       @media (max-width: 1020px) {
+        .admin-page {
+          padding: 0 0.75rem 1rem;
+        }
         .stats-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .grid-2 {
           grid-template-columns: 1fr;
         }
+        table {
+          min-width: 680px;
+        }
       }
       @media (max-width: 600px) {
+        .admin-page {
+          margin-top: 0.7rem;
+          padding: 0 0.55rem 0.8rem;
+        }
+        .page-head {
+          flex-direction: column;
+          align-items: stretch;
+          padding: 0.85rem;
+        }
+        .page-head p {
+          font-size: 0.86rem;
+        }
+        .btn-refresh {
+          width: 100%;
+        }
         .stats-grid {
           grid-template-columns: 1fr;
+          gap: 0.7rem;
+        }
+        .panel {
+          padding: 0.72rem;
+          border-radius: 12px;
+        }
+        .panel-head h2 {
+          font-size: 0.96rem;
+        }
+        table {
+          min-width: 600px;
+        }
+        thead th,
+        tbody td {
+          padding: 0.54rem 0.44rem;
+          font-size: 0.82rem;
+        }
+        .btn-inline,
+        .btn-delete {
+          width: 100%;
+          font-size: 0.8rem;
+        }
+        select {
+          max-width: none;
         }
       }
     `,
@@ -393,6 +477,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     private productService: ProductService,
     private orderService: OrderService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   readonly getEntityId = getEntityId;
@@ -401,8 +486,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.apiBaseUrl = this.authService.apiBaseUrl;
     this.currentAdminId = getEntityId(this.authService.currentUserValue);
     this.loadDashboard(true);
-    const focus$ =
-      typeof window !== 'undefined' ? fromEvent(window, 'focus') : EMPTY;
+    const focus$ = typeof window !== 'undefined' ? fromEvent(window, 'focus') : EMPTY;
     const visibility$ =
       typeof document !== 'undefined'
         ? fromEvent(document, 'visibilitychange').pipe(filter(() => !document.hidden))
@@ -412,7 +496,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       this.authService.usersRefresh$,
       this.productService.refresh$,
       this.orderService.refresh$,
-      timer(0, 5000),
+      timer(5000, 5000),
       focus$,
       visibility$,
       this.router.events.pipe(
@@ -482,9 +566,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.error = '';
 
     forkJoin({
-      users: this.authService.getAllUsers().pipe(catchError((err) => of({ __error: err } as const))),
-      products: this.productService.getProducts().pipe(catchError((err) => of({ __error: err } as const))),
-      orders: this.orderService.getAllOrders().pipe(catchError((err) => of({ __error: err } as const))),
+      users: this.authService
+        .getAllUsers()
+        .pipe(catchError((err) => of({ __error: err } as const))),
+      products: this.productService
+        .getProducts()
+        .pipe(catchError((err) => of({ __error: err } as const))),
+      orders: this.orderService
+        .getAllOrders()
+        .pipe(catchError((err) => of({ __error: err } as const))),
     }).subscribe({
       next: ({ users, products, orders }) => {
         const userError = this.extractError(users);
@@ -504,6 +594,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         }
 
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.error = err?.error?.message || 'Impossible de charger les données admin.';
@@ -633,7 +724,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   private resolveSellerCapacity(): number {
-    const byWindow = (globalThis as { __SHOPPING_MALL_MAX_SELLERS__?: number }).__SHOPPING_MALL_MAX_SELLERS__;
+    const byWindow = (globalThis as { __SHOPPING_MALL_MAX_SELLERS__?: number })
+      .__SHOPPING_MALL_MAX_SELLERS__;
     if (typeof byWindow === 'number' && byWindow > 0) return Math.floor(byWindow);
 
     const byStorage = globalThis.localStorage?.getItem('shoppingMallMaxSellers');
@@ -642,5 +734,4 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     return 100;
   }
-
 }
