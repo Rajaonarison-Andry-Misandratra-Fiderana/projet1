@@ -442,13 +442,6 @@
   gap: 0.2rem;
 }
 
-.price::before {
-  content: '€';
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #5a6e7f;
-}
-
 .seller-name {
   font-size: 0.8rem;
   font-weight: 500;
@@ -628,14 +621,6 @@
   font-size: 1.8rem;
   font-weight: 700;
   color: #0f5e9c;
-}
-
-.popup-price::before {
-  content: '€';
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #5a6e7f;
-  margin-right: 0.2rem;
 }
 
 .popup-desc {
