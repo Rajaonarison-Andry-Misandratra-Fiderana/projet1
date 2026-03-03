@@ -20,7 +20,10 @@ app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
-// 🔥 Servir Angular
+// ===============================
+// 🔥 SERVIR ANGULAR (PRODUCTION)
+// ===============================
+
 const angularPath = path.join(
   __dirname,
   "../frontend/shopping-mall/dist/shopping-mall/browser",
@@ -28,13 +31,15 @@ const angularPath = path.join(
 
 app.use(express.static(angularPath));
 
-// 🔥 Fallback SPA (IMPORTANT : toujours en dernier)
-app.get("*", (req, res) => {
+// Fallback SPA (compatible Express 5)
+app.use((req, res) => {
   res.sendFile(path.join(angularPath, "index.html"));
 });
 
-// Démarrage serveur
+// ===============================
+
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`Serveur fonctionne sur le port ${PORT}`);
+  console.log(`Serveur lancé sur le port ${PORT}`);
 });
