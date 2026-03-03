@@ -12,7 +12,6 @@ import { User } from '../../models/user.model';
 import { Order } from '../../models/order.model';
 import { getEntityId } from '../../utils/id.util';
 
-type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
 type PaymentStatus = 'pending' | 'completed' | 'failed';
 
 @Component({
@@ -74,7 +73,6 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
                   <th>N°</th>
                   <th>Acheteur</th>
                   <th>Montant</th>
-                  <th>Statut</th>
                   <th>Paiement</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -85,18 +83,6 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
                   <td>{{ order.orderNumber || getEntityId(order) }}</td>
                   <td>{{ getBuyerLabel(order) }}</td>
                   <td>{{ order.totalAmount | number: '1.0-0' }} MGA</td>
-                  <td>
-                    <select
-                      [(ngModel)]="order.status"
-                      [disabled]="savingOrders.has(getEntityId(order))"
-                    >
-                      <option value="pending">pending</option>
-                      <option value="confirmed">confirmed</option>
-                      <option value="shipped">shipped</option>
-                      <option value="delivered">delivered</option>
-                      <option value="cancelled">cancelled</option>
-                    </select>
-                  </td>
                   <td>
                     <select
                       [(ngModel)]="order.paymentStatus"
@@ -121,7 +107,7 @@ type PaymentStatus = 'pending' | 'completed' | 'failed';
                 </tr>
 
                 <tr *ngIf="recentOrders.length === 0">
-                  <td colspan="7" class="empty">Aucune commande.</td>
+                  <td colspan="6" class="empty">Aucune commande.</td>
                 </tr>
               </tbody>
             </table>
@@ -607,15 +593,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     const id = getEntityId(order);
     if (!id) return;
 
-    const status = order.status as OrderStatus;
     const paymentStatus = order.paymentStatus as PaymentStatus;
 
     this.savingOrders.add(id);
 
-    forkJoin({
-      status: this.orderService.updateOrderStatus(id, { status }),
-      payment: this.orderService.updatePaymentStatus(id, { paymentStatus }),
-    }).subscribe({
+    this.orderService.updatePaymentStatus(id, { paymentStatus }).subscribe({
       next: () => {
         this.savingOrders.delete(id);
         this.loadDashboard(false);
