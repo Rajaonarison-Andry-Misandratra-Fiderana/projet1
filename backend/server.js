@@ -28,10 +28,19 @@ const angularPath = path.join(
   "../frontend/shopping-mall/dist/shopping-mall/browser",
 );
 
-app.use(express.static(angularPath));
+app.use(express.static(angularPath, { index: false }));
 
-// Fallback SPA (compatible Express 5)
+// 404 for unknown API endpoints
+app.use("/api", (req, res) => {
+  res.status(404).json({ message: "API route not found" });
+});
+
+// SPA fallback only for application routes (not missing assets)
 app.use((req, res) => {
+  if (path.extname(req.path)) {
+    res.status(404).type("text/plain").send("Asset not found");
+    return;
+  }
   res.sendFile(path.join(angularPath, "index.html"));
 });
 
