@@ -78,8 +78,15 @@
         </div>
 
         <div class="modal-actions">
-          <button type="submit" class="btn-primary" [disabled]="!canPublishProduct() || isPublishing">
-            {{ isPublishing ? 'Publication...' : 'Publier' }}
+          <button type="submit" class="btn-primary" [disabled]="!canPublishProduct() || isPublishing || imageLoading">
+            <span *ngIf="imageLoading" class="btn-spinner" aria-hidden="true"></span>
+            {{
+              imageLoading
+                ? 'Chargement image...'
+                : isPublishing
+                  ? 'Publication...'
+                  : 'Publier'
+            }}
           </button>
           <button type="button" class="btn-secondary" (click)="closeCreateModal()" [disabled]="isPublishing">
             Annuler

@@ -39,6 +39,7 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
   showCreateModal = false;
   showEditModal = false;
   isPublishing = false;
+  imageLoading = false;
   selectedFile: File | null = null;
   previewImage: string | null = null;
   categories = PRODUCT_CATEGORIES;
@@ -142,6 +143,7 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     this.isPublishing = false;
     this.createError = null;
     this.selectedFile = null;
+    this.imageLoading = false;
     this.previewImage = null;
     this.newProduct = {
       name: '',
@@ -220,16 +222,29 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     this.selectedFile = input.files[0];
+    this.previewImage = null;
+    this.imageLoading = true;
     const reader = new FileReader();
     reader.onload = (e) => {
       this.previewImage = e.target?.result as string;
+      this.imageLoading = false;
+      this.cdr.detectChanges();
+    };
+    reader.onerror = () => {
+      this.imageLoading = false;
+      this.createError = "Impossible de charger l'image sélectionnée.";
+      this.cdr.detectChanges();
+    };
+    reader.onabort = () => {
+      this.imageLoading = false;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(this.selectedFile);
   }
 
   createProduct(e: Event): void {
     e.preventDefault();
-    if (this.isPublishing) return;
+    if (this.isPublishing || this.imageLoading) return;
     this.createError = null;
     if (!this.isSeller) {
       this.createError = 'Seuls les vendeurs peuvent publier un produit.';
