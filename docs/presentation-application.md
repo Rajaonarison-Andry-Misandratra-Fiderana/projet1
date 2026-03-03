@@ -48,9 +48,9 @@ Shopping Mall est une application web de centre commercial avec trois profils:
 
 ## 4. Logins par défaut (démo)
 Utiliser ces comptes pour les démonstrations:
-- Admin: `admin@example.com` / `password123`
-- Vendeur: `seller@example.com` / `password123`
-- Acheteur: `buyer@example.com` / `password123`
+- Admin: `admin@gmail.com` / `administrateur`
+- Vendeur: `vendeur@gmail.com` / `vendeur123`
+- Acheteur: `acheteur@gmail.com` / `acheteur`
 
 Ces comptes sont aussi accessibles en boutons rapides sur l'écran de connexion.
 

@@ -17,9 +17,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   submitted = false;
   error = '';
   readonly demoAccounts = [
-    { label: 'Acheteur', email: 'buyer@example.com', password: 'password123' },
-    { label: 'Vendeur', email: 'seller@example.com', password: 'password123' },
-    { label: 'Admin', email: 'admin@example.com', password: 'password123' },
+    { label: 'Acheteur', email: 'acheteur@gmail.com', password: 'acheteur' },
+    { label: 'Vendeur', email: 'vendeur@gmail.com', password: 'vendeur123' },
+    { label: 'Admin', email: 'admin@gmail.com', password: 'administrateur' },
   ];
 
   constructor(
