@@ -37,33 +37,33 @@
         <div *ngIf="createError" class="status-panel error">{{ createError }}</div>
         <div class="field">
           <label>Nom</label>
-          <input type="text" [(ngModel)]="newProduct.name" name="name" required />
+          <input type="text" [(ngModel)]="newProduct.name" name="name" required minlength="2" />
         </div>
 
         <div class="field">
           <label>Description</label>
-          <textarea [(ngModel)]="newProduct.description" name="description"></textarea>
+          <textarea [(ngModel)]="newProduct.description" name="description" required minlength="5"></textarea>
         </div>
 
         <div class="split">
           <div class="field">
             <label>Prix</label>
-            <input type="number" [(ngModel)]="newProduct.price" name="price" required />
+            <input type="number" [(ngModel)]="newProduct.price" name="price" required min="1" />
           </div>
           <div class="field">
             <label>Stock</label>
-            <input type="number" [(ngModel)]="newProduct.stock" name="stock" required />
+            <input type="number" [(ngModel)]="newProduct.stock" name="stock" required min="0" />
           </div>
         </div>
 
         <div class="field">
           <label>Emplacement (ex: Box 5)</label>
-          <input type="text" [(ngModel)]="newProduct.location" name="location" />
+          <input type="text" [(ngModel)]="newProduct.location" name="location" required minlength="2" />
         </div>
 
         <div class="field">
           <label>Catégorie</label>
-          <select [(ngModel)]="newProduct.category" name="category">
+          <select [(ngModel)]="newProduct.category" name="category" required>
             <option value="">Sélectionner une catégorie</option>
             <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
           </select>
@@ -71,7 +71,7 @@
 
         <div class="field">
           <label>Image</label>
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" />
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" required />
           <img *ngIf="previewImage" [src]="previewImage" class="preview" alt="Aperçu" />
         </div>
 
@@ -104,11 +104,11 @@
         <div class="split">
           <div class="field">
             <label>Prix</label>
-            <input type="number" [(ngModel)]="editProduct.price" name="editPrice" required />
+            <input type="number" [(ngModel)]="editProduct.price" name="editPrice" required min="1" />
           </div>
           <div class="field">
             <label>Stock</label>
-            <input type="number" [(ngModel)]="editProduct.stock" name="editStock" required />
+            <input type="number" [(ngModel)]="editProduct.stock" name="editStock" required min="0" />
           </div>
         </div>
 

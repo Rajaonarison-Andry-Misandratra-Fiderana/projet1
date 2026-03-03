@@ -232,7 +232,8 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
     };
 
     if (!this.canPublishProduct()) {
-      this.createError = 'Veuillez remplir au moins le nom, le prix et le stock.';
+      this.createError =
+        'Tous les champs sont obligatoires: nom, description, prix (> 0), stock (>= 0), emplacement, catégorie et image.';
       return;
     }
 
@@ -281,14 +282,22 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
 
   canPublishProduct(): boolean {
     const name = String(this.newProduct.name || '').trim();
+    const description = String(this.newProduct.description || '').trim();
+    const location = String(this.newProduct.location || '').trim();
+    const category = String(this.newProduct.category || '').trim();
     const price = Number(this.newProduct.price || 0);
     const stock = Number(this.newProduct.stock || 0);
+    const hasImage = !!this.previewImage;
     return (
       !!name &&
+      !!description &&
+      !!location &&
+      !!category &&
       Number.isFinite(price) &&
       price > 0 &&
       Number.isFinite(stock) &&
-      stock >= 0
+      stock >= 0 &&
+      hasImage
     );
   }
 }
