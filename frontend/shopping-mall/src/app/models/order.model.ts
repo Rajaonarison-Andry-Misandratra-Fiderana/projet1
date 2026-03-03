@@ -7,6 +7,7 @@ export interface Order {
   totalAmount: number;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   shippingAddress: ShippingAddress;
+  deliveryContact?: DeliveryContact;
   paymentMethod: 'credit_card' | 'debit_card' | 'paypal' | 'bank_transfer';
   paymentStatus: 'pending' | 'completed' | 'failed';
   notes?: string;
@@ -51,6 +52,12 @@ export interface ShippingAddress {
   country: string;
 }
 
+export interface DeliveryContact {
+  fullName: string;
+  email: string;
+  phone: string;
+}
+
 export interface CreateOrderRequest {
   clientRequestId?: string;
   items: {
@@ -60,6 +67,7 @@ export interface CreateOrderRequest {
     shop?: string;
   }[];
   shippingAddress: ShippingAddress;
+  deliveryContact?: DeliveryContact;
   paymentMethod: 'credit_card' | 'debit_card' | 'paypal' | 'bank_transfer';
 }
 

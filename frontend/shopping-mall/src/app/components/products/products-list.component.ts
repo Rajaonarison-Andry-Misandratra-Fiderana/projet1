@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { SellerModerationService } from '../../services/seller-moderation.service';
 import { Product } from '../../models/product.model';
-import { PRODUCT_CATEGORIES } from '../../constants/categories';
+import { PRODUCT_CATEGORIES, toFrenchCategory } from '../../constants/categories';
 import { getEntityId } from '../../utils/id.util';
 
 @Component({
@@ -130,6 +130,7 @@ export class ProductsListComponent implements OnInit, OnDestroy {
         [
           product.name,
           product.description || '',
+          this.getCategoryLabel(product.category),
           product.category || '',
           product.location || '',
           this.getSellerName(product),
@@ -137,7 +138,8 @@ export class ProductsListComponent implements OnInit, OnDestroy {
       );
       const matchesSearch = !normalizedSearch || haystack.includes(normalizedSearch);
 
-      const matchesCategory = !this.selectedCategory || product.category === this.selectedCategory;
+      const matchesCategory =
+        !this.selectedCategory || this.getCategoryLabel(product.category) === this.selectedCategory;
       const matchesPrice = product.price >= min && product.price <= max;
 
       return matchesSearch && matchesCategory && matchesPrice;
@@ -170,5 +172,10 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.minPrice = 0;
     this.maxPrice = this.maxPriceLimit;
     this.applyFilters();
+  }
+
+  getCategoryLabel(category: string | undefined): string {
+    const translated = toFrenchCategory(category);
+    return translated || 'Sans catégorie';
   }
 }

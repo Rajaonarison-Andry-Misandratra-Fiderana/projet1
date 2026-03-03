@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
+import { forkJoin, Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
@@ -17,12 +18,11 @@ export class SettingsComponent {
   passwordForm: FormGroup;
   currentUser: User | null = null;
   submitting = false;
-  savingPrivacy = false;
   error = '';
   success = '';
   privacyError = '';
-  privacySuccess = '';
   adminVisibilityEnabled = false;
+  initialAdminVisibility = false;
 
   constructor(
     private fb: FormBuilder,
@@ -30,9 +30,9 @@ export class SettingsComponent {
   ) {
     this.passwordForm = this.fb.group(
       {
-        currentPassword: ['', [Validators.required, Validators.minLength(6)]],
-        newPassword: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', [Validators.required, Validators.minLength(6)]],
+        currentPassword: ['', [Validators.minLength(6)]],
+        newPassword: ['', [Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.minLength(6)]],
       },
       { validators: this.passwordMatchValidator },
     );
@@ -40,6 +40,7 @@ export class SettingsComponent {
     this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
       this.adminVisibilityEnabled = !!user?.adminCanViewCommerce;
+      this.initialAdminVisibility = !!user?.adminCanViewCommerce;
     });
   }
 
@@ -49,52 +50,67 @@ export class SettingsComponent {
 
   submit(): void {
     this.error = '';
+    this.privacyError = '';
     this.success = '';
-    this.passwordForm.markAllAsTouched();
-
-    if (this.passwordForm.invalid || this.submitting) {
-      return;
-    }
+    if (this.submitting) return;
 
     const currentPassword = String(this.f['currentPassword'].value || '').trim();
     const newPassword = String(this.f['newPassword'].value || '').trim();
+    const confirmPassword = String(this.f['confirmPassword'].value || '').trim();
+    const hasPasswordInput = !!currentPassword || !!newPassword || !!confirmPassword;
+    const privacyChanged =
+      this.currentUser?.role === 'boutique' &&
+      this.adminVisibilityEnabled !== this.initialAdminVisibility;
 
-    if (currentPassword === newPassword) {
-      this.error = 'Le nouveau mot de passe doit être différent de l’actuel.';
+    if (!hasPasswordInput && !privacyChanged) {
+      this.success = 'Aucune modification à enregistrer.';
       return;
+    }
+
+    let passwordRequest$: Observable<{ message: string }> = of({ message: '' });
+    if (hasPasswordInput) {
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        this.error = 'Pour changer le mot de passe, remplissez tous les champs.';
+        return;
+      }
+      this.passwordForm.markAllAsTouched();
+      if (this.passwordForm.invalid) return;
+
+      if (currentPassword === newPassword) {
+        this.error = 'Le nouveau mot de passe doit être différent de l’actuel.';
+        return;
+      }
+
+      passwordRequest$ = this.authService.changePassword({ currentPassword, newPassword });
+    }
+
+    let privacyRequest$: Observable<{ user: User }> = of({ user: this.currentUser as User });
+    if (privacyChanged && this.currentUser?.role === 'boutique') {
+      privacyRequest$ = this.authService.updateSellerAdminVisibility(this.adminVisibilityEnabled);
     }
 
     this.submitting = true;
-    this.authService.changePassword({ currentPassword, newPassword }).subscribe({
-      next: (res) => {
+    forkJoin({ passwordRes: passwordRequest$, privacyRes: privacyRequest$ }).subscribe({
+      next: ({ passwordRes, privacyRes }) => {
         this.submitting = false;
-        this.success = res?.message || 'Mot de passe changé avec succès.';
-        this.passwordForm.reset();
+        if (hasPasswordInput) {
+          this.passwordForm.reset();
+        }
+        if (privacyChanged) {
+          this.initialAdminVisibility = !!privacyRes?.user?.adminCanViewCommerce;
+        }
+        this.success = hasPasswordInput
+          ? passwordRes?.message || 'Mise à jour enregistrée avec succès.'
+          : 'Paramètre enregistré avec succès.';
       },
       error: (err) => {
         this.submitting = false;
-        this.error = err?.error?.message || 'Impossible de changer le mot de passe.';
-      },
-    });
-  }
-
-  savePrivacySettings(): void {
-    this.privacyError = '';
-    this.privacySuccess = '';
-
-    if (this.currentUser?.role !== 'boutique' || this.savingPrivacy) {
-      return;
-    }
-
-    this.savingPrivacy = true;
-    this.authService.updateSellerAdminVisibility(this.adminVisibilityEnabled).subscribe({
-      next: () => {
-        this.savingPrivacy = false;
-        this.privacySuccess = 'Préférence de visibilité enregistrée.';
-      },
-      error: (err) => {
-        this.savingPrivacy = false;
-        this.privacyError = err?.error?.message || 'Impossible d’enregistrer ce paramètre.';
+        const message = err?.error?.message || 'Impossible d’enregistrer les modifications.';
+        if (privacyChanged && !hasPasswordInput) {
+          this.privacyError = message;
+          return;
+        }
+        this.error = message;
       },
     });
   }

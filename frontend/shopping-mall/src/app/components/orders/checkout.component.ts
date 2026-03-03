@@ -451,6 +451,11 @@ export class CheckoutComponent implements OnInit {
           zipCode: this.form.zipCode.trim(),
           country: this.form.country.trim(),
         },
+        deliveryContact: {
+          fullName: this.form.fullName.trim(),
+          email: this.form.email.trim(),
+          phone: this.form.phone.trim(),
+        },
         paymentMethod: 'credit_card',
       })
       .subscribe({

@@ -26,7 +26,7 @@
       <img [src]="p.image || '/assets/placeholder.png'" alt="{{ p.name }}" />
       <div class="card-content">
         <h3>{{ p.name }}</h3>
-        <p class="meta">{{ p.category || 'Sans catégorie' }}</p>
+        <p class="meta">{{ getCategoryLabel(p.category) }}</p>
         <p class="meta">Emplacement: {{ p.location || 'Non renseigné' }}</p>
         <p class="price">{{ p.price | number: '1.0-0' }} MGA <span>• Stock: {{ p.stock }}</span></p>
       </div>

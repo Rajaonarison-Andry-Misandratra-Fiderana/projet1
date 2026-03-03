@@ -16,16 +16,11 @@
       </p>
 
       <div *ngIf="privacyError" class="alert alert-error">{{ privacyError }}</div>
-      <div *ngIf="privacySuccess" class="alert alert-success">{{ privacySuccess }}</div>
 
       <label class="toggle-row">
         <input type="checkbox" [(ngModel)]="adminVisibilityEnabled" />
         <span>J’autorise l’accès admin à mes données commerciales</span>
       </label>
-
-      <button type="button" class="btn-primary" [disabled]="savingPrivacy" (click)="savePrivacySettings()">
-        {{ savingPrivacy ? 'Enregistrement...' : 'Enregistrer ce paramètre' }}
-      </button>
     </section>
 
     <form [formGroup]="passwordForm" (ngSubmit)="submit()" class="form-grid">

@@ -69,7 +69,7 @@
           <div class="product-info">
             <h3>{{ product.name }}</h3>
             <p class="category" *ngIf="product.category">
-              {{ product.category }}
+              {{ getCategoryLabel(product.category) }}
             </p>
             <p class="description">
               {{ product.description?.substring(0, 60) }}...
@@ -96,7 +96,7 @@
     <img [src]="selectedProduct.image || '/assets/placeholder.png'" [alt]="selectedProduct.name" />
     <h3>{{ selectedProduct.name }}</h3>
     <div class="popup-meta">
-      <span class="popup-chip">{{ selectedProduct.category || 'Sans catégorie' }}</span>
+      <span class="popup-chip">{{ getCategoryLabel(selectedProduct.category) }}</span>
       <span class="popup-chip">Box: {{ selectedProduct.location || 'Non renseigné' }}</span>
       <span class="popup-chip">Stock: {{ selectedProduct.stock }}</span>
     </div>

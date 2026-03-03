@@ -44,6 +44,11 @@ const buildTransactionSnapshot = (order) => {
   return {
     buyer,
     sellers: Array.from(sellersMap.values()),
+    deliveryContact: {
+      fullName: order.deliveryContact?.fullName || "",
+      email: order.deliveryContact?.email || "",
+      phone: order.deliveryContact?.phone || "",
+    },
     shippingAddress: {
       street: order.shippingAddress?.street || "",
       city: order.shippingAddress?.city || "",
@@ -61,7 +66,7 @@ const buildTransactionSnapshot = (order) => {
 // CREATE ORDER
 exports.createOrder = async (req, res) => {
   try {
-    const { items, shippingAddress, paymentMethod, clientRequestId } = req.body;
+    const { items, shippingAddress, deliveryContact, paymentMethod, clientRequestId } = req.body;
 
     if (clientRequestId) {
       const existingOrder = await Order.findOne({ buyer: req.user.id, clientRequestId })
@@ -100,6 +105,11 @@ exports.createOrder = async (req, res) => {
       items,
       totalAmount,
       shippingAddress,
+      deliveryContact: {
+        fullName: deliveryContact?.fullName || "",
+        email: deliveryContact?.email || "",
+        phone: deliveryContact?.phone || "",
+      },
       paymentMethod,
     });
 

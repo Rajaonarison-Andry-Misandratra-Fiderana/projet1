@@ -54,6 +54,11 @@ const orderSchema = new mongoose.Schema(
       zipCode: String,
       country: String,
     },
+    deliveryContact: {
+      fullName: String,
+      email: String,
+      phone: String,
+    },
     paymentMethod: {
       type: String,
       enum: ["credit_card", "debit_card", "paypal", "bank_transfer"],
@@ -87,6 +92,11 @@ const orderSchema = new mongoose.Schema(
         state: String,
         zipCode: String,
         country: String,
+      },
+      deliveryContact: {
+        fullName: String,
+        email: String,
+        phone: String,
       },
       items: [
         {

@@ -24,11 +24,6 @@
       <p class="value">{{ unitsSoldTotal }}</p>
     </article>
 
-    <article class="stat-card">
-      <p class="label">Clics produits</p>
-      <p class="value">{{ totalClicks }}</p>
-    </article>
-
     <article class="stat-card big">
       <p class="label">Chiffre d'affaires</p>
       <p class="value">{{ totalSales | number: '1.0-0' }} MGA</p>
@@ -55,7 +50,6 @@
             <th>Catégorie</th>
             <th>Prix</th>
             <th>Stock</th>
-            <th>Clics</th>
             <th>Ventes</th>
             <th>Commandes</th>
             <th>Revenu</th>
@@ -67,10 +61,46 @@
             <td>{{ row.category }}</td>
             <td>{{ row.price | number: '1.0-0' }} MGA</td>
             <td>{{ row.stock }}</td>
-            <td>{{ row.clicks }}</td>
             <td>{{ row.unitsSold }}</td>
             <td>{{ row.orderCount }}</td>
             <td>{{ row.salesAmount | number: '1.0-0' }} MGA</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section *ngIf="!loading" class="table-section">
+    <h2>Historique des acheteurs</h2>
+    <div *ngIf="purchaseHistoryRows.length === 0" class="empty">
+      Aucune commande client pour le moment.
+    </div>
+    <div *ngIf="purchaseHistoryRows.length > 0" class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Commande</th>
+            <th>Date</th>
+            <th>Acheteur</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Adresse livraison</th>
+            <th>Produits</th>
+            <th>Qté</th>
+            <th>Montant</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of purchaseHistoryRows">
+            <td>{{ row.orderId }}</td>
+            <td>{{ row.orderDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ row.buyerName }}</td>
+            <td>{{ row.buyerEmail }}</td>
+            <td>{{ row.buyerPhone }}</td>
+            <td>{{ row.shippingAddress }}</td>
+            <td>{{ row.products }}</td>
+            <td>{{ row.quantity }}</td>
+            <td>{{ row.totalAmount | number: '1.0-0' }} MGA</td>
           </tr>
         </tbody>
       </table>

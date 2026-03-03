@@ -7,7 +7,7 @@ import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { Product } from '../../models/product.model';
 import { getEntityId } from '../../utils/id.util';
-import { PRODUCT_CATEGORIES } from '../../constants/categories';
+import { PRODUCT_CATEGORIES, toFrenchCategory } from '../../constants/categories';
 
 @Component({
   selector: 'app-boutique-products',
@@ -353,5 +353,10 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
       stock >= 0 &&
       hasImage
     );
+  }
+
+  getCategoryLabel(category: string | undefined): string {
+    const translated = toFrenchCategory(category);
+    return translated || 'Sans catégorie';
   }
 }

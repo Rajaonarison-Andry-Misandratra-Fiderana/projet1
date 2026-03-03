@@ -9,6 +9,7 @@ import { OrderService } from '../../services/order.service';
 import { Product } from '../../models/product.model';
 import { Order } from '../../models/order.model';
 import { getEntityId } from '../../utils/id.util';
+import { toFrenchCategory } from '../../constants/categories';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -106,7 +107,7 @@ import { getEntityId } from '../../utils/id.util';
               <tr *ngFor="let p of recentProducts">
                 <td>{{ p.name }}</td>
                 <td>{{ getShopLabel(p) }}</td>
-                <td>{{ p.category || '-' }}</td>
+                <td>{{ getCategoryLabel(p.category) || '-' }}</td>
                 <td>{{ p.price | number: '1.0-0' }} MGA</td>
                 <td>{{ p.stock }}</td>
                 <td>
@@ -523,6 +524,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     const id = getEntityId(product);
     if (!id) return false;
     return this.products.some((p) => getEntityId(p) === id);
+  }
+
+  getCategoryLabel(category: string | undefined): string {
+    return toFrenchCategory(category);
   }
 
   private normalizeUsersResponse(value: unknown): { role?: string }[] {
