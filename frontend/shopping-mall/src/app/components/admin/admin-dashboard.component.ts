@@ -7,7 +7,6 @@ import { ProductService } from '../../services/product.service';
 import { AuthService } from '../../services/auth.service';
 import { OrderService } from '../../services/order.service';
 import { Product } from '../../models/product.model';
-import { User } from '../../models/user.model';
 import { Order } from '../../models/order.model';
 import { getEntityId } from '../../utils/id.util';
 
@@ -57,7 +56,7 @@ import { getEntityId } from '../../utils/id.util';
 
       <div *ngIf="loading" class="panel">Chargement des données admin...</div>
 
-      <section *ngIf="!loading" class="grid-2">
+      <section *ngIf="!loading" class="panel">
         <article class="panel">
           <div class="panel-head">
             <h2>Dernières commandes</h2>
@@ -83,47 +82,6 @@ import { getEntityId } from '../../utils/id.util';
 
                 <tr *ngIf="recentOrders.length === 0">
                   <td colspan="4" class="empty">Aucune commande.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-head">
-            <h2>Utilisateurs récents</h2>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  <th>Rôle</th>
-                  <th>Inscription</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let user of recentUsers">
-                  <td>{{ user.name || '-' }}</td>
-                  <td>{{ user.email }}</td>
-                  <td>{{ user.role }}</td>
-                  <td>{{ getUserCreatedAt(user) | date: 'dd/MM/yyyy HH:mm' }}</td>
-                  <td>
-                    <button
-                      type="button"
-                      class="btn-delete"
-                      (click)="deleteUser(user)"
-                      [disabled]="isCurrentAdmin(user) || savingUsers.has(getEntityId(user))"
-                    >
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-                <tr *ngIf="recentUsers.length === 0">
-                  <td colspan="5" class="empty">Aucun utilisateur.</td>
                 </tr>
               </tbody>
             </table>
@@ -278,12 +236,6 @@ import { getEntityId } from '../../utils/id.util';
         overflow: hidden;
         min-width: 0;
       }
-      .grid-2 {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1rem;
-        min-width: 0;
-      }
       .panel-head h2 {
         margin: 0 0 0.7rem;
         color: #10243a;
@@ -349,9 +301,6 @@ import { getEntityId } from '../../utils/id.util';
         .stats-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-        .grid-2 {
-          grid-template-columns: 1fr;
-        }
         table {
           min-width: 560px;
         }
@@ -411,7 +360,7 @@ import { getEntityId } from '../../utils/id.util';
   ],
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
-  users: User[] = [];
+  users: { role?: string }[] = [];
   products: Product[] = [];
   orders: Order[] = [];
 
@@ -420,10 +369,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   apiBaseUrl = '';
   sellerCapacity = this.resolveSellerCapacity();
 
-  savingUsers = new Set<string>();
   savingProducts = new Set<string>();
 
-  private currentAdminId = '';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -438,7 +385,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.apiBaseUrl = this.authService.apiBaseUrl;
-    this.currentAdminId = getEntityId(this.authService.currentUserValue);
     this.loadDashboard(true);
     const focus$ = typeof window !== 'undefined' ? fromEvent(window, 'focus') : EMPTY;
     const visibility$ =
@@ -501,12 +447,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return [...this.orders]
       .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
       .slice(0, 12);
-  }
-
-  get recentUsers(): User[] {
-    return [...this.users]
-      .sort((a, b) => this.getUserCreatedAt(b).getTime() - this.getUserCreatedAt(a).getTime())
-      .slice(0, 10);
   }
 
   get recentProducts(): Product[] {
@@ -575,29 +515,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteUser(user: User): void {
-    const id = getEntityId(user);
-    if (!id || this.isCurrentAdmin(user)) return;
-    if (!confirm(`Supprimer l'utilisateur ${user.email} ?`)) return;
-
-    this.savingUsers.add(id);
-    this.authService.deleteUser(id).subscribe({
-      next: () => {
-        this.savingUsers.delete(id);
-        this.loadDashboard(false);
-      },
-      error: (err) => {
-        this.savingUsers.delete(id);
-        this.error = err?.error?.message || 'Échec suppression utilisateur.';
-      },
-    });
-  }
-
-  isCurrentAdmin(user: User): boolean {
-    const id = getEntityId(user);
-    return !!id && id === this.currentAdminId;
-  }
-
   getBuyerLabel(order: Order): string {
     if (!order.buyer) return '-';
     if (typeof order.buyer === 'string') return order.buyer;
@@ -616,22 +533,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return this.products.some((p) => getEntityId(p) === id);
   }
 
-  getUserCreatedAt(user: User): Date {
-    if (user.createdAt) {
-      const direct = new Date(user.createdAt);
-      if (!Number.isNaN(direct.getTime())) return direct;
-    }
-
-    const id = getEntityId(user);
-    if (!id || id.length < 8) return new Date(0);
-    const ts = Number.parseInt(id.slice(0, 8), 16);
-    if (Number.isNaN(ts)) return new Date(0);
-    return new Date(ts * 1000);
-  }
-
-  private normalizeUsersResponse(value: unknown): User[] {
-    if (Array.isArray(value)) return value as User[];
-    const maybeObject = value as { users?: User[]; data?: User[] };
+  private normalizeUsersResponse(value: unknown): { role?: string }[] {
+    if (Array.isArray(value)) return value as { role?: string }[];
+    const maybeObject = value as { users?: { role?: string }[]; data?: { role?: string }[] };
     if (Array.isArray(maybeObject?.users)) return maybeObject.users;
     if (Array.isArray(maybeObject?.data)) return maybeObject.data;
     return [];
