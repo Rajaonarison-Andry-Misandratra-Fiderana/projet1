@@ -68,11 +68,11 @@
           </div>
           <div class="product-info">
             <h3>{{ product.name }}</h3>
-            <p class="category" *ngIf="product.category">
+            <p class="category">
               {{ getCategoryLabel(product.category) }}
             </p>
             <p class="description">
-              {{ product.description?.substring(0, 60) }}...
+              {{ product.description ? (product.description | slice: 0 : 90) : 'Aucune description disponible.' }}
             </p>
             <div class="product-footer">
               <span class="price">{{ product.price | number: '1.0-0' }} Ar</span>
