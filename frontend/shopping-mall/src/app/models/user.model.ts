@@ -25,5 +25,12 @@ export interface SignupRequest {
   name: string;
   email: string;
   password: string;
-  role?: 'admin' | 'boutique' | 'acheteur';
+  role?: 'acheteur';
+}
+
+export interface AdminCreateSellerRequest {
+  name: string;
+  email: string;
+  password: string;
+  boxNumber: string;
 }

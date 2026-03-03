@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { User, AuthResponse, LoginRequest, SignupRequest } from '../models/user.model';
+import {
+  User,
+  AuthResponse,
+  LoginRequest,
+  SignupRequest,
+  AdminCreateSellerRequest,
+} from '../models/user.model';
 import { API_BASE_URL } from '../config/api.config';
 
 @Injectable({
@@ -107,6 +113,12 @@ export class AuthService {
   deleteUser(id: string): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.apiUrl}/${id}`)
+      .pipe(tap(() => this.usersRefreshSubject.next()));
+  }
+
+  createSellerByAdmin(payload: AdminCreateSellerRequest): Observable<{ user: User }> {
+    return this.http
+      .post<{ user: User }>(`${this.apiUrl}/admin-create-seller`, payload)
       .pipe(tap(() => this.usersRefreshSubject.next()));
   }
 

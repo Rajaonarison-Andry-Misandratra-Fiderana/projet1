@@ -310,19 +310,13 @@ export class BoutiqueProductsComponent implements OnInit, OnDestroy {
   }
 
   canPublishNow(): boolean {
-    return this.isSeller && this.boutiqueStatus === 'approved' && !!this.assignedBox;
+    return this.isSeller && !!this.assignedBox;
   }
 
   private getPublishAccessMessage(): string | null {
     if (!this.isSeller) return null;
-    if (this.boutiqueStatus === 'pending') {
-      return "Votre boutique est en attente de validation par l'administrateur.";
-    }
-    if (this.boutiqueStatus === 'rejected') {
-      return 'Votre boutique a été rejetée. Contactez un administrateur.';
-    }
-    if (this.boutiqueStatus === 'approved' && !this.assignedBox) {
-      return "Votre boutique est validée mais aucun box n'est encore attribué.";
+    if (!this.assignedBox) {
+      return "Aucun box n'est attribué à votre boutique. Contactez un administrateur.";
     }
     return null;
   }

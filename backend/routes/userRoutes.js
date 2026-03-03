@@ -7,6 +7,7 @@ const {
   getAllUsers,
   updateUser,
   deleteUser,
+  createSellerByAdmin,
 } = require("../controllers/userController");
 const { auth, authorize } = require("../middleware/auth");
 
@@ -19,6 +20,7 @@ router.get("/profile", auth, getProfile);
 
 // Admin only routes
 router.get("/", auth, authorize(["admin"]), getAllUsers);
+router.post("/admin-create-seller", auth, authorize(["admin"]), createSellerByAdmin);
 router.put("/:id", auth, authorize(["admin"]), updateUser);
 router.delete("/:id", auth, authorize(["admin"]), deleteUser);
 

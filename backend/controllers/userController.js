@@ -5,15 +5,15 @@ const jwt = require("jsonwebtoken");
 const normalizeBox = (value) => {
   const raw = String(value || "").trim();
   if (!raw) return "";
-  const match = raw.match(/^(?:box\s*)?([a-z0-9-]+)$/i);
+  const match = raw.match(/^(\d{1,6})$/);
   if (!match) return "";
-  return `Box ${match[1].toUpperCase()}`;
+  return `Box ${match[1]}`;
 };
 
 // SIGNUP
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // Check if user exists
     let user = await User.findOne({ email });
@@ -26,15 +26,14 @@ exports.signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create user
-    const requestedRole = role || "acheteur";
-    const isBoutique = requestedRole === "boutique";
+    const requestedRole = "acheteur";
 
     user = new User({
       name,
       email,
       password: hashedPassword,
       role: requestedRole,
-      boutiqueStatus: isBoutique ? "pending" : "approved",
+      boutiqueStatus: "approved",
       assignedBox: "",
     });
 
@@ -59,6 +58,56 @@ exports.signup = async (req, res) => {
       },
     });
   } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// CREATE SELLER (Admin only)
+exports.createSellerByAdmin = async (req, res) => {
+  try {
+    const { name, email, password, boxNumber } = req.body;
+    const normalizedBox = normalizeBox(boxNumber);
+
+    if (!name || !email || !password || !normalizedBox) {
+      return res.status(400).json({
+        message:
+          "name, email, password and boxNumber are required. boxNumber must be numeric (ex: 12).",
+      });
+    }
+
+    let existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const seller = new User({
+      name: String(name).trim(),
+      email: String(email).trim().toLowerCase(),
+      password: hashedPassword,
+      role: "boutique",
+      boutiqueStatus: "approved",
+      assignedBox: normalizedBox,
+    });
+
+    await seller.save();
+
+    res.status(201).json({
+      user: {
+        id: seller._id,
+        name: seller.name,
+        email: seller.email,
+        role: seller.role,
+        boutiqueStatus: seller.boutiqueStatus || "approved",
+        assignedBox: seller.assignedBox,
+      },
+    });
+  } catch (err) {
+    if (err?.code === 11000) {
+      return res.status(400).json({ message: "This box is already assigned to another boutique." });
+    }
     res.status(500).json({ message: err.message });
   }
 };
@@ -132,7 +181,7 @@ exports.updateUser = async (req, res) => {
       const normalizedBox = normalizeBox(payload.assignedBox);
       if (payload.assignedBox && !normalizedBox) {
         return res.status(400).json({
-          message: "Invalid box format. Use format like 'Box 5'.",
+          message: "Invalid box format. Enter only numeric box number (ex: 12).",
         });
       }
       payload.assignedBox = normalizedBox;

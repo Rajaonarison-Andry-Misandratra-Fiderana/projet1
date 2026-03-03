@@ -15,7 +15,6 @@ type UserRow = {
   user: User;
   id: string;
   banned: boolean;
-  boxDraft: string;
 };
 
 @Component({
@@ -29,9 +28,14 @@ type UserRow = {
           <h1>Gestion des utilisateurs</h1>
           <p>Données récupérées depuis meanapp: name, email, role.</p>
         </div>
-        <button type="button" class="btn-refresh" (click)="refreshNow()" [disabled]="loading">
-          Actualiser
-        </button>
+        <div class="head-actions">
+          <button type="button" class="btn-create-seller" (click)="openCreateSellerModal()">
+            + Créer vendeur
+          </button>
+          <button type="button" class="btn-refresh" (click)="refreshNow()" [disabled]="loading">
+            Actualiser
+          </button>
+        </div>
       </header>
 
       <div class="toolbar">
@@ -50,8 +54,8 @@ type UserRow = {
           <p class="value">{{ rows.length }}</p>
         </article>
         <article class="stat-card">
-          <p class="label">Boutiques pending</p>
-          <p class="value">{{ pendingBoutiquesCount }}</p>
+          <p class="label">Boutiques</p>
+          <p class="value">{{ boutiquesCount }}</p>
         </article>
         <article class="stat-card">
           <p class="label">Boutiques validées</p>
@@ -74,7 +78,6 @@ type UserRow = {
               <th>Email</th>
               <th>Rôle</th>
               <th>Statut</th>
-              <th>Validation boutique</th>
               <th>Box</th>
               <th>Action</th>
             </tr>
@@ -95,25 +98,9 @@ type UserRow = {
               </td>
               <td>
                 <span *ngIf="row.user.role !== 'boutique'">-</span>
-                <span
-                  *ngIf="row.user.role === 'boutique'"
-                  class="badge"
-                  [class.badge-warning]="row.user.boutiqueStatus === 'pending'"
-                  [class.badge-ok]="row.user.boutiqueStatus === 'approved'"
-                  [class.badge-danger]="row.user.boutiqueStatus === 'rejected'"
-                >
-                  {{ row.user.boutiqueStatus || 'pending' }}
+                <span *ngIf="row.user.role === 'boutique'" class="badge badge-box">
+                  {{ row.user.assignedBox || '-' }}
                 </span>
-              </td>
-              <td>
-                <span *ngIf="row.user.role !== 'boutique'">-</span>
-                <input
-                  *ngIf="row.user.role === 'boutique'"
-                  type="text"
-                  class="box-input"
-                  placeholder="Box 5"
-                  [(ngModel)]="row.boxDraft"
-                />
               </td>
               <td>
                 <div class="action-group">
@@ -128,22 +115,6 @@ type UserRow = {
                   </button>
                   <button *ngIf="row.banned" type="button" class="btn-unban" (click)="unbanUser(row)">
                     Déban
-                  </button>
-                  <button
-                    *ngIf="row.user.role === 'boutique'"
-                    type="button"
-                    class="btn-approve"
-                    (click)="approveBoutique(row)"
-                  >
-                    Valider
-                  </button>
-                  <button
-                    *ngIf="row.user.role === 'boutique'"
-                    type="button"
-                    class="btn-reject"
-                    (click)="rejectBoutique(row)"
-                  >
-                    Rejeter
                   </button>
                   <button type="button" class="btn-history" (click)="openHistoryModal(row)">
                     Historique
@@ -160,10 +131,53 @@ type UserRow = {
               </td>
             </tr>
             <tr *ngIf="filteredRows.length === 0">
-              <td colspan="7" class="empty">Aucun utilisateur trouvé.</td>
+              <td colspan="6" class="empty">Aucun utilisateur trouvé.</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="modal-overlay" *ngIf="showCreateSellerModal">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Créer un compte vendeur</h2>
+            <button type="button" class="btn-close" (click)="closeCreateSellerModal()">×</button>
+          </div>
+          <form class="modal-body" (submit)="submitCreateSeller($event)">
+            <div *ngIf="createSellerError" class="panel error">{{ createSellerError }}</div>
+            <div class="field">
+              <label>Nom complet</label>
+              <input type="text" [(ngModel)]="createSellerForm.name" name="sellerName" required minlength="3" />
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" [(ngModel)]="createSellerForm.email" name="sellerEmail" required />
+            </div>
+            <div class="field">
+              <label>Numéro de box</label>
+              <input
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                [(ngModel)]="createSellerForm.boxNumber"
+                (ngModelChange)="createSellerForm.boxNumber = normalizeBoxNumber($event)"
+                name="sellerBoxNumber"
+                placeholder="Ex: 12"
+                required
+              />
+            </div>
+            <div class="field">
+              <label>Mot de passe</label>
+              <input type="password" [(ngModel)]="createSellerForm.password" name="sellerPassword" required minlength="6" />
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-secondary" (click)="closeCreateSellerModal()">Annuler</button>
+              <button type="submit" class="btn-create-seller" [disabled]="creatingSeller">
+                {{ creatingSeller ? 'Création...' : 'Créer le vendeur' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <!-- History Modal -->
@@ -245,6 +259,11 @@ type UserRow = {
         align-items: center;
         gap: 0.8rem;
       }
+      .head-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
       .page-head h1 {
         margin: 0;
         color: #10243a;
@@ -258,6 +277,15 @@ type UserRow = {
         border-radius: 10px;
         padding: 0.6rem 0.9rem;
         background: linear-gradient(120deg, #0f5e9c, #0d86b8);
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-create-seller {
+        border: 0;
+        border-radius: 10px;
+        padding: 0.6rem 0.9rem;
+        background: linear-gradient(120deg, #117a4c, #0ea56a);
         color: #fff;
         font-weight: 700;
         cursor: pointer;
@@ -353,58 +381,32 @@ type UserRow = {
         background: #fdecec;
         color: #9d2d2d;
       }
+      .badge-box {
+        background: #eef5ff;
+        color: #134d86;
+      }
       .btn-ban,
       .btn-unban,
-      .btn-approve,
-      .btn-reject {
-        border: 0;
-        border-radius: 8px;
-        padding: 0.4rem 0.6rem;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      .btn-ban {
-        background: #fdecec;
-        color: #992f2f;
-      }
-      .btn-unban {
-        background: #e9f8f0;
-        color: #1d7d53;
-      }
-      .btn-approve {
-        background: #e8f4fd;
-        color: #0f5e9c;
-        margin-left: 0.3rem;
-      }
-      .btn-reject {
-        background: #fef3e5;
-        color: #8b5a00;
-        margin-left: 0.3rem;
-      }
-      .badge-warning {
-        background: #fef3e5;
-        color: #8b5a00;
-      }
-      .box-input {
-        border: 1px solid #c9dced;
-        border-radius: 8px;
-        padding: 0.35rem 0.45rem;
-        font: inherit;
-        max-width: 105px;
-      }
-      .empty {
-        text-align: center;
-        color: #5d768f;
-      }
       .btn-history,
       .btn-delete {
         border: 0;
         border-radius: 8px;
-        padding: 0.4rem 0.6rem;
+        padding: 0.44rem 0.72rem;
         font-weight: 700;
         cursor: pointer;
-        margin-left: 0.3rem;
-        font-size: 1rem;
+        font-size: 0.85rem;
+      }
+      .btn-ban {
+        background: #fff1f1;
+        color: #992f2f;
+      }
+      .btn-unban {
+        background: #ecfbf3;
+        color: #1d7d53;
+      }
+      .empty {
+        text-align: center;
+        color: #5d768f;
       }
       .action-group {
         display: flex;
@@ -412,14 +414,14 @@ type UserRow = {
         gap: 0.35rem;
       }
       .btn-history {
-        background: #e8f4fd;
+        background: #edf6ff;
         color: #0f5e9c;
       }
       .btn-history:hover {
         background: #d0e8fa;
       }
       .btn-delete {
-        background: #fdecec;
+        background: #fff2f2;
         color: #992f2f;
       }
       .btn-delete:hover {
@@ -467,6 +469,18 @@ type UserRow = {
       }
       .modal-body {
         padding: 1.5rem;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+      }
+      .field input {
+        border: 1px solid #c9dced;
+        border-radius: 8px;
+        padding: 0.55rem 0.65rem;
+        font: inherit;
       }
       .info-section {
         margin-bottom: 1.5rem;
@@ -559,6 +573,15 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   selectedUserHistory: any = null;
   historyLoading = false;
   historyError = '';
+  showCreateSellerModal = false;
+  creatingSeller = false;
+  createSellerError = '';
+  createSellerForm = {
+    name: '',
+    email: '',
+    boxNumber: '',
+    password: '',
+  };
 
   private currentAdminId = '';
   private destroy$ = new Subject<void>();
@@ -604,14 +627,12 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  get pendingBoutiquesCount(): number {
-    return this.rows.filter((r) => r.user.role === 'boutique' && r.user.boutiqueStatus === 'pending')
-      .length;
+  get boutiquesCount(): number {
+    return this.rows.filter((r) => r.user.role === 'boutique').length;
   }
 
   get approvedBoutiquesCount(): number {
-    return this.rows.filter((r) => r.user.role === 'boutique' && r.user.boutiqueStatus === 'approved')
-      .length;
+    return this.rows.filter((r) => r.user.role === 'boutique' && !!r.user.assignedBox).length;
   }
 
   get bannedCount(): number {
@@ -631,7 +652,6 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
             user,
             id,
             banned: !!id && bannedIds.has(id),
-            boxDraft: user.assignedBox || '',
           } as UserRow;
         });
         this.applyFilters();
@@ -660,7 +680,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.filteredRows = this.rows.filter((row) => {
       if (!q) return true;
       const haystack = this.normalize(
-        `${row.user.name || ''} ${row.user.email || ''} ${row.user.role || ''} ${row.user.boutiqueStatus || ''} ${row.user.assignedBox || ''}`,
+        `${row.user.name || ''} ${row.user.email || ''} ${row.user.role || ''} ${row.user.assignedBox || ''}`,
       );
       return haystack.includes(q);
     });
@@ -678,46 +698,6 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.loadUsers(false);
   }
 
-  approveBoutique(row: UserRow): void {
-    if (!row.id || row.user.role !== 'boutique') return;
-    const box = this.normalizeBox(row.boxDraft);
-    if (!box) {
-      alert("Veuillez renseigner un box valide (ex: 'Box 5').");
-      return;
-    }
-
-    this.authService
-      .updateUser(row.id, {
-        boutiqueStatus: 'approved',
-        assignedBox: box,
-      })
-      .subscribe({
-        next: () => this.loadUsers(false),
-        error: (err) => {
-          alert(
-            `Erreur: ${
-              err?.error?.message || "Impossible de valider la boutique et d'assigner le box."
-            }`,
-          );
-        },
-      });
-  }
-
-  rejectBoutique(row: UserRow): void {
-    if (!row.id || row.user.role !== 'boutique') return;
-    this.authService
-      .updateUser(row.id, {
-        boutiqueStatus: 'rejected',
-        assignedBox: '',
-      })
-      .subscribe({
-        next: () => this.loadUsers(false),
-        error: (err) => {
-          alert(`Erreur: ${err?.error?.message || 'Impossible de rejeter la boutique.'}`);
-        },
-      });
-  }
-
   isCurrentAdmin(row: UserRow): boolean {
     return !!row.id && row.id === this.currentAdminId;
   }
@@ -730,12 +710,56 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
       .trim();
   }
 
-  private normalizeBox(value: string): string {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-    const match = raw.match(/^(?:box\s*)?([a-z0-9-]+)$/i);
-    if (!match) return '';
-    return `Box ${match[1].toUpperCase()}`;
+  normalizeBoxNumber(value: string): string {
+    return String(value || '').replace(/\D/g, '').slice(0, 6);
+  }
+
+  openCreateSellerModal(): void {
+    this.createSellerError = '';
+    this.showCreateSellerModal = true;
+  }
+
+  closeCreateSellerModal(): void {
+    this.showCreateSellerModal = false;
+    this.creatingSeller = false;
+    this.createSellerError = '';
+    this.createSellerForm = { name: '', email: '', boxNumber: '', password: '' };
+  }
+
+  submitCreateSeller(event: Event): void {
+    event.preventDefault();
+    if (this.creatingSeller) return;
+
+    const name = String(this.createSellerForm.name || '').trim();
+    const email = String(this.createSellerForm.email || '').trim().toLowerCase();
+    const password = String(this.createSellerForm.password || '').trim();
+    const boxNumber = this.normalizeBoxNumber(this.createSellerForm.boxNumber);
+
+    if (!name || !email || !password || !boxNumber) {
+      this.createSellerError = 'Tous les champs sont obligatoires. Le box doit être numérique.';
+      return;
+    }
+    if (password.length < 6) {
+      this.createSellerError = 'Le mot de passe doit contenir au moins 6 caractères.';
+      return;
+    }
+
+    this.creatingSeller = true;
+    this.createSellerError = '';
+
+    this.authService
+      .createSellerByAdmin({ name, email, password, boxNumber })
+      .subscribe({
+        next: () => {
+          this.creatingSeller = false;
+          this.closeCreateSellerModal();
+          this.loadUsers(false);
+        },
+        error: (err) => {
+          this.creatingSeller = false;
+          this.createSellerError = err?.error?.message || 'Impossible de créer le vendeur.';
+        },
+      });
   }
 
   openHistoryModal(row: UserRow): void {
