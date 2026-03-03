@@ -3,7 +3,7 @@
     <div>
       <h1>Mes produits</h1>
       <p>Gérez votre catalogue et vos disponibilités.</p>
-      <p class="meta">Box attribué: {{ assignedBox || 'Non attribué' }}</p>
+      <p class="header-meta">Box attribué: {{ assignedBox || 'Non attribué' }}</p>
     </div>
     <button *ngIf="isSeller" class="btn-primary" (click)="openCreateModal()">
       Ajouter un produit
@@ -23,8 +23,7 @@
       <img [src]="p.image || '/assets/placeholder.png'" alt="{{ p.name }}" loading="lazy" decoding="async" />
       <div class="card-content">
         <h3>{{ p.name }}</h3>
-        <p class="meta">{{ getCategoryLabel(p.category) }}</p>
-        <p class="meta">Emplacement: {{ p.location || 'Non renseigné' }}</p>
+        <p class="category">{{ getCategoryLabel(p.category) }}</p>
         <p class="price">{{ p.price | number: '1.0-0' }} MGA <span>• Stock: {{ p.stock }}</span></p>
       </div>
       <div class="card-actions">
