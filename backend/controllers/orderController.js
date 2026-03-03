@@ -1,5 +1,6 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const User = require("../models/User");
 
 const toId = (value) => {
   if (!value) return "";
@@ -162,7 +163,39 @@ exports.getAllOrders = async (req, res) => {
       .populate("items.shop", "name email")
       .sort({ createdAt: -1 });
 
-    res.json(orders);
+    const sellerIds = Array.from(
+      new Set(
+        orders
+          .flatMap((order) => (order.items || []).map((item) => toId(item.shop)))
+          .filter(Boolean),
+      ),
+    );
+    const sellers = await User.find({
+      _id: { $in: sellerIds },
+      role: "boutique",
+      adminCanViewCommerce: true,
+    }).select("_id");
+    const allowedSellerIds = new Set(sellers.map((seller) => String(seller._id)));
+
+    const visibleOrders = orders
+      .map((order) => {
+        const source = typeof order.toObject === "function" ? order.toObject() : order;
+        const visibleItems = (source.items || []).filter((item) =>
+          allowedSellerIds.has(toId(item.shop)),
+        );
+        if (visibleItems.length === 0) return null;
+        return {
+          ...source,
+          items: visibleItems,
+          totalAmount: visibleItems.reduce(
+            (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+            0,
+          ),
+        };
+      })
+      .filter(Boolean);
+
+    res.json(visibleOrders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

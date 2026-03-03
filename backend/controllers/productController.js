@@ -211,3 +211,25 @@ exports.getProductsByShop = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// GET PRODUCTS VISIBLE TO ADMIN (only boutiques that opted-in)
+exports.getAdminVisibleProducts = async (req, res) => {
+  try {
+    const sellers = await User.find({
+      role: "boutique",
+      adminCanViewCommerce: true,
+    }).select("_id");
+    const sellerIds = sellers.map((s) => s._id);
+
+    const products = await Product.find({
+      shop: { $in: sellerIds },
+      isActive: true,
+    })
+      .populate("shop", "name email")
+      .populate("reviews.user", "name");
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

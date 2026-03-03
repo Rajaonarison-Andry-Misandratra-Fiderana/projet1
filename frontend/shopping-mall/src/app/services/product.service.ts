@@ -52,6 +52,12 @@ export class ProductService {
       .pipe(map((products) => products.map((product) => this.withSyncedStock(product))));
   }
 
+  getAdminVisibleProducts(): Observable<Product[]> {
+    return this.http
+      .get<Product[]>(`${this.apiUrl}/admin/visible`)
+      .pipe(map((products) => products.map((product) => this.withSyncedStock(product))));
+  }
+
   createProduct(request: CreateProductRequest): Observable<Product> {
     return this.http
       .post<Product>(this.apiUrl, request)

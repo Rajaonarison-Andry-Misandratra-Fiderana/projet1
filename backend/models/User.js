@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    adminCanViewCommerce: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

@@ -35,6 +35,7 @@ exports.signup = async (req, res) => {
       role: requestedRole,
       boutiqueStatus: "approved",
       assignedBox: "",
+      adminCanViewCommerce: false,
     });
 
     await user.save();
@@ -55,6 +56,7 @@ exports.signup = async (req, res) => {
         role: user.role,
         boutiqueStatus: user.boutiqueStatus || "approved",
         assignedBox: user.assignedBox,
+        adminCanViewCommerce: !!user.adminCanViewCommerce,
       },
     });
   } catch (err) {
@@ -90,6 +92,7 @@ exports.createSellerByAdmin = async (req, res) => {
       role: "boutique",
       boutiqueStatus: "approved",
       assignedBox: normalizedBox,
+      adminCanViewCommerce: false,
     });
 
     await seller.save();
@@ -102,6 +105,7 @@ exports.createSellerByAdmin = async (req, res) => {
         role: seller.role,
         boutiqueStatus: seller.boutiqueStatus || "approved",
         assignedBox: seller.assignedBox,
+        adminCanViewCommerce: !!seller.adminCanViewCommerce,
       },
     });
   } catch (err) {
@@ -145,6 +149,7 @@ exports.login = async (req, res) => {
         role: user.role,
         boutiqueStatus: user.boutiqueStatus || "approved",
         assignedBox: user.assignedBox,
+        adminCanViewCommerce: !!user.adminCanViewCommerce,
       },
     });
   } catch (err) {
@@ -189,6 +194,45 @@ exports.changePassword = async (req, res) => {
     await user.save();
 
     return res.json({ message: "Password updated successfully." });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// UPDATE SELLER PRIVACY (Authenticated boutique)
+exports.updateSellerAdminVisibility = async (req, res) => {
+  try {
+    const { adminCanViewCommerce } = req.body;
+
+    if (req.user.role !== "boutique") {
+      return res.status(403).json({ message: "Only boutique can update this setting." });
+    }
+
+    if (typeof adminCanViewCommerce !== "boolean") {
+      return res.status(400).json({ message: "adminCanViewCommerce must be a boolean." });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { adminCanViewCommerce },
+      { new: true, runValidators: true },
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    return res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        boutiqueStatus: user.boutiqueStatus || "approved",
+        assignedBox: user.assignedBox,
+        adminCanViewCommerce: !!user.adminCanViewCommerce,
+      },
+    });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }

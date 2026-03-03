@@ -127,6 +127,18 @@ export class AuthService {
     return this.http.put<{ message: string }>(`${this.apiUrl}/change-password`, payload);
   }
 
+  updateSellerAdminVisibility(adminCanViewCommerce: boolean): Observable<{ user: User }> {
+    return this.http
+      .put<{ user: User }>(`${this.apiUrl}/settings/admin-visibility`, { adminCanViewCommerce })
+      .pipe(
+        tap((response) => {
+          if (response?.user) {
+            this.setCurrentUser(response.user);
+          }
+        }),
+      );
+  }
+
   isAuthenticated(): boolean {
     return this.tokenValue !== null;
   }
@@ -159,6 +171,7 @@ export class AuthService {
       role: (user.role || 'acheteur') as User['role'],
       boutiqueStatus: (user.boutiqueStatus || 'approved') as User['boutiqueStatus'],
       assignedBox: user.assignedBox || '',
+      adminCanViewCommerce: !!user.adminCanViewCommerce,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

@@ -1,21 +1,28 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { User } from '../../models/user.model';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css'],
 })
 export class SettingsComponent {
   passwordForm: FormGroup;
+  currentUser: User | null = null;
   submitting = false;
+  savingPrivacy = false;
   error = '';
   success = '';
+  privacyError = '';
+  privacySuccess = '';
+  adminVisibilityEnabled = false;
 
   constructor(
     private fb: FormBuilder,
@@ -29,6 +36,11 @@ export class SettingsComponent {
       },
       { validators: this.passwordMatchValidator },
     );
+
+    this.authService.currentUser$.subscribe((user) => {
+      this.currentUser = user;
+      this.adminVisibilityEnabled = !!user?.adminCanViewCommerce;
+    });
   }
 
   get f() {
@@ -62,6 +74,27 @@ export class SettingsComponent {
       error: (err) => {
         this.submitting = false;
         this.error = err?.error?.message || 'Impossible de changer le mot de passe.';
+      },
+    });
+  }
+
+  savePrivacySettings(): void {
+    this.privacyError = '';
+    this.privacySuccess = '';
+
+    if (this.currentUser?.role !== 'boutique' || this.savingPrivacy) {
+      return;
+    }
+
+    this.savingPrivacy = true;
+    this.authService.updateSellerAdminVisibility(this.adminVisibilityEnabled).subscribe({
+      next: () => {
+        this.savingPrivacy = false;
+        this.privacySuccess = 'Préférence de visibilité enregistrée.';
+      },
+      error: (err) => {
+        this.savingPrivacy = false;
+        this.privacyError = err?.error?.message || 'Impossible d’enregistrer ce paramètre.';
       },
     });
   }

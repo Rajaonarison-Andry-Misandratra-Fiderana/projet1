@@ -9,6 +9,7 @@ const {
   deleteUser,
   createSellerByAdmin,
   changePassword,
+  updateSellerAdminVisibility,
 } = require("../controllers/userController");
 const { auth, authorize } = require("../middleware/auth");
 
@@ -19,6 +20,12 @@ router.post("/login", login);
 // Protected routes
 router.get("/profile", auth, getProfile);
 router.put("/change-password", auth, changePassword);
+router.put(
+  "/settings/admin-visibility",
+  auth,
+  authorize(["boutique"]),
+  updateSellerAdminVisibility,
+);
 
 // Admin only routes
 router.get("/", auth, authorize(["admin"]), getAllUsers);

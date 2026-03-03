@@ -7,6 +7,7 @@ export interface User {
   role: 'admin' | 'boutique' | 'acheteur';
   boutiqueStatus?: 'pending' | 'approved' | 'rejected';
   assignedBox?: string;
+  adminCanViewCommerce?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

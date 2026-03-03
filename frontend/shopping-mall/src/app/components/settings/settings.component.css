@@ -41,6 +41,35 @@
   color: #1f7e52;
 }
 
+.privacy-card {
+  margin-top: 0.95rem;
+  border: 1px solid #d6e5f2;
+  border-radius: 12px;
+  padding: 0.9rem;
+  background: #f8fcff;
+}
+
+.privacy-card h2 {
+  margin: 0;
+  color: #10243a;
+  font-size: 1rem;
+}
+
+.privacy-card p {
+  margin: 0.45rem 0 0;
+  color: #4f6b84;
+  font-size: 0.9rem;
+}
+
+.toggle-row {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  color: #16324c;
+  font-weight: 600;
+}
+
 .form-grid {
   margin-top: 1rem;
 }

@@ -8,12 +8,14 @@ const {
   deleteProduct,
   addReview,
   getProductsByShop,
+  getAdminVisibleProducts,
 } = require("../controllers/productController");
 const { auth, authorize } = require("../middleware/auth");
 
 // Public routes
 router.get("/", getProducts);
 router.get("/shop/:shopId", getProductsByShop);
+router.get("/admin/visible", auth, authorize(["admin"]), getAdminVisibleProducts);
 router.get("/:id", getProductById);
 
 // Protected routes (boutique and admin can create)

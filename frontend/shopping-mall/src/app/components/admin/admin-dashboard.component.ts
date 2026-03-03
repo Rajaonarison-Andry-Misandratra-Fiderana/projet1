@@ -30,12 +30,6 @@ import { getEntityId } from '../../utils/id.util';
 
       <div class="stats-grid" *ngIf="!loading">
         <article class="stat-card">
-          <p class="label">Chiffre d'affaire</p>
-          <p class="value">{{ paidRevenue | number: '1.0-0' }} MGA</p>
-          <p class="meta">Paiements complétés</p>
-        </article>
-
-        <article class="stat-card">
           <p class="label">Nombre de vendeurs</p>
           <p class="value">{{ boutiquesCount }}</p>
           <p class="meta">Comptes rôle boutique</p>
@@ -81,7 +75,9 @@ import { getEntityId } from '../../utils/id.util';
                 </tr>
 
                 <tr *ngIf="recentOrders.length === 0">
-                  <td colspan="4" class="empty">Aucune commande.</td>
+                  <td colspan="4" class="empty">
+                    Aucune transaction visible. Les vendeurs doivent autoriser le partage en settings.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -125,7 +121,9 @@ import { getEntityId } from '../../utils/id.util';
                 </td>
               </tr>
               <tr *ngIf="recentProducts.length === 0">
-                <td colspan="6" class="empty">Aucun produit.</td>
+                <td colspan="6" class="empty">
+                  Aucun produit visible. Les vendeurs doivent autoriser le partage en settings.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -195,7 +193,7 @@ import { getEntityId } from '../../utils/id.util';
       .stats-grid {
         margin-top: 1rem;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 0.85rem;
       }
       .stat-card {
@@ -437,12 +435,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return this.orders.filter((o) => o.status === 'pending').length;
   }
 
-  get paidRevenue(): number {
-    return this.orders
-      .filter((o) => o.paymentStatus === 'completed')
-      .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-  }
-
   get recentOrders(): Order[] {
     return [...this.orders]
       .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
@@ -464,7 +456,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         .getAllUsers()
         .pipe(catchError((err) => of({ __error: err } as const))),
       products: this.productService
-        .getProducts()
+        .getAdminVisibleProducts()
         .pipe(catchError((err) => of({ __error: err } as const))),
       orders: this.orderService
         .getAllOrders()

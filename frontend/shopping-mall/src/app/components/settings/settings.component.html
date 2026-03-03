@@ -8,6 +8,26 @@
     <div *ngIf="error" class="alert alert-error">{{ error }}</div>
     <div *ngIf="success" class="alert alert-success">{{ success }}</div>
 
+    <section class="privacy-card" *ngIf="currentUser?.role === 'boutique'">
+      <h2>Confidentialité vendeur</h2>
+      <p>
+        Autoriser l’admin à voir vos transactions récentes, vos produits et votre stock dans le
+        dashboard admin.
+      </p>
+
+      <div *ngIf="privacyError" class="alert alert-error">{{ privacyError }}</div>
+      <div *ngIf="privacySuccess" class="alert alert-success">{{ privacySuccess }}</div>
+
+      <label class="toggle-row">
+        <input type="checkbox" [(ngModel)]="adminVisibilityEnabled" />
+        <span>J’autorise l’accès admin à mes données commerciales</span>
+      </label>
+
+      <button type="button" class="btn-primary" [disabled]="savingPrivacy" (click)="savePrivacySettings()">
+        {{ savingPrivacy ? 'Enregistrement...' : 'Enregistrer ce paramètre' }}
+      </button>
+    </section>
+
     <form [formGroup]="passwordForm" (ngSubmit)="submit()" class="form-grid">
       <label class="field">
         <span>Mot de passe actuel</span>
