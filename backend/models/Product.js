@@ -18,6 +18,10 @@ const productSchema = new mongoose.Schema(
     description: {
       type: String,
     },
+    location: {
+      type: String,
+      trim: true,
+    },
     image: {
       type: String,
     },

@@ -1,12 +1,24 @@
 const Product = require("../models/Product");
 
+const normalizeLocation = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const match = raw.match(/^(?:box\s*)?([a-z0-9-]+)$/i);
+  if (!match) return "";
+  return `Box ${match[1].toUpperCase()}`;
+};
+
 // CREATE
 exports.createProduct = async (req, res) => {
   try {
-    const { name, price, stock, description, image, category } = req.body;
+    const { name, price, stock, description, image, category, location } = req.body;
+    const normalizedLocation = normalizeLocation(location);
 
-    if (!name || !price) {
-      return res.status(400).json({ message: "Name and price are required" });
+    if (!name || !price || !normalizedLocation) {
+      return res.status(400).json({
+        message: "Name, price and location are required. Location format must be like 'Box 5'.",
+      });
     }
 
     const product = new Product({
@@ -14,6 +26,7 @@ exports.createProduct = async (req, res) => {
       price,
       stock: stock || 0,
       description,
+      location: normalizedLocation,
       image,
       category,
       shop: req.user.id,
@@ -86,10 +99,21 @@ exports.updateProduct = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
+    const updatePayload = { ...req.body };
+    if (Object.prototype.hasOwnProperty.call(updatePayload, "location")) {
+      const normalizedLocation = normalizeLocation(updatePayload.location);
+      if (!normalizedLocation) {
+        return res.status(400).json({
+          message: "Invalid location format. Use format like 'Box 5'.",
+        });
+      }
+      updatePayload.location = normalizedLocation;
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true },
+      updatePayload,
+      { new: true, runValidators: true },
     ).populate("shop", "name email");
 
     res.json(updatedProduct);
