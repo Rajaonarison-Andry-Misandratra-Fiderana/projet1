@@ -35,6 +35,9 @@
       <div class="info-section">
         <h2>Accès rapides</h2>
         <div class="quick-links">
+          <a routerLink="/settings" class="link-btn">
+            Settings mot de passe
+          </a>
           <a *ngIf="currentUser.role === 'boutique'" href="/boutique/dashboard" class="link-btn">
             Voir le tableau de bord boutique
           </a>

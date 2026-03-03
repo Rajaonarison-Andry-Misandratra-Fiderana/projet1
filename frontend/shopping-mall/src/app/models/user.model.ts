@@ -34,3 +34,8 @@ export interface AdminCreateSellerRequest {
   password: string;
   boxNumber: string;
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

@@ -12,6 +12,7 @@
         class="nav-link nav-main">Accueil</a>
       <a routerLink="/products" routerLinkActive="active" class="nav-link nav-main">Produits</a>
       <a routerLink="/profile" routerLinkActive="active" class="nav-link nav-main">Profil</a>
+      <a *ngIf="currentUser" routerLink="/settings" routerLinkActive="active" class="nav-link nav-main">Settings</a>
     </div>
 
     <button class="menu-toggle" (click)="toggleMenu()" [class.active]="isMenuOpen">
@@ -25,6 +26,7 @@
         <a routerLink="/" (click)="closeMenus()" class="nav-link">Accueil</a>
         <a routerLink="/products" (click)="closeMenus()" class="nav-link">Produits</a>
         <a routerLink="/profile" (click)="closeMenus()" class="nav-link">Profil</a>
+        <a *ngIf="currentUser" routerLink="/settings" (click)="closeMenus()" class="nav-link">Settings</a>
       </div>
       <div class="navbar-end">
         <ng-container *ngIf="!currentUser">
@@ -74,6 +76,9 @@
               </a>
               <a *ngIf="isBoutique()" routerLink="/boutique/products" class="dropdown-item" (click)="closeMenus()">
                 Mes produits
+              </a>
+              <a routerLink="/settings" class="dropdown-item" (click)="closeMenus()">
+                Settings
               </a>
               <hr class="dropdown-divider">
               <button (click)="logout()" class="dropdown-item logout">

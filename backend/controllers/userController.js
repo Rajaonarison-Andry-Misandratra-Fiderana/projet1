@@ -152,6 +152,48 @@ exports.login = async (req, res) => {
   }
 };
 
+// CHANGE PASSWORD (Authenticated user)
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "currentPassword and newPassword are required." });
+    }
+
+    if (String(newPassword).trim().length < 6) {
+      return res
+        .status(400)
+        .json({ message: "New password must contain at least 6 characters." });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const isMatch = await bcrypt.compare(String(currentPassword), String(user.password));
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect." });
+    }
+
+    const samePassword = await bcrypt.compare(String(newPassword), String(user.password));
+    if (samePassword) {
+      return res
+        .status(400)
+        .json({ message: "New password must be different from current password." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(String(newPassword), salt);
+    await user.save();
+
+    return res.json({ message: "Password updated successfully." });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 // GET PROFILE
 exports.getProfile = async (req, res) => {
   try {

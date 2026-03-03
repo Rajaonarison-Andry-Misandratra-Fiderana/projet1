@@ -36,6 +36,12 @@ export const routes: Routes = [
     component: ProfileComponent,
   },
   {
+    path: 'settings',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./components/settings/settings.component').then((m) => m.SettingsComponent),
+  },
+  {
     path: 'buyer/orders',
     canActivate: [AuthGuard],
     data: { roles: ['acheteur'] },

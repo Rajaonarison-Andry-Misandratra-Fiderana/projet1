@@ -46,6 +46,32 @@ type UserRow = {
           [(ngModel)]="searchQuery"
           (ngModelChange)="applyFilters()"
         />
+        <div class="role-filters">
+          <button
+            type="button"
+            class="role-filter"
+            [class.active]="roleFilter === 'all'"
+            (click)="setRoleFilter('all')"
+          >
+            Tous
+          </button>
+          <button
+            type="button"
+            class="role-filter"
+            [class.active]="roleFilter === 'acheteur'"
+            (click)="setRoleFilter('acheteur')"
+          >
+            Clients
+          </button>
+          <button
+            type="button"
+            class="role-filter"
+            [class.active]="roleFilter === 'boutique'"
+            (click)="setRoleFilter('boutique')"
+          >
+            Vendeurs
+          </button>
+        </div>
       </div>
 
       <section class="stats-grid" *ngIf="!loading">
@@ -170,6 +196,16 @@ type UserRow = {
               <label>Mot de passe</label>
               <input type="password" [(ngModel)]="createSellerForm.password" name="sellerPassword" required minlength="6" />
             </div>
+            <div class="field">
+              <label>Confirmation mot de passe</label>
+              <input
+                type="password"
+                [(ngModel)]="createSellerForm.confirmPassword"
+                name="sellerPasswordConfirm"
+                required
+                minlength="6"
+              />
+            </div>
             <div class="modal-footer">
               <button type="button" class="btn-secondary" (click)="closeCreateSellerModal()">Annuler</button>
               <button type="submit" class="btn-create-seller" [disabled]="creatingSeller">
@@ -292,6 +328,29 @@ type UserRow = {
       }
       .toolbar {
         margin-top: 0.9rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .role-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+      }
+      .role-filter {
+        border: 1px solid #c9dced;
+        border-radius: 999px;
+        background: #fff;
+        color: #33556f;
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 0.36rem 0.75rem;
+        cursor: pointer;
+      }
+      .role-filter.active {
+        border-color: #117a4c;
+        color: #fff;
+        background: linear-gradient(120deg, #117a4c, #0ea56a);
       }
       .stats-grid {
         margin-top: 0.9rem;
@@ -568,6 +627,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   searchQuery = '';
+  roleFilter: 'all' | 'acheteur' | 'boutique' = 'all';
   apiBaseUrl = '';
   showHistoryModal = false;
   selectedUserHistory: any = null;
@@ -581,6 +641,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     email: '',
     boxNumber: '',
     password: '',
+    confirmPassword: '',
   };
 
   private currentAdminId = '';
@@ -678,12 +739,18 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
   applyFilters(): void {
     const q = this.normalize(this.searchQuery);
     this.filteredRows = this.rows.filter((row) => {
+      if (this.roleFilter !== 'all' && row.user.role !== this.roleFilter) return false;
       if (!q) return true;
       const haystack = this.normalize(
         `${row.user.name || ''} ${row.user.email || ''} ${row.user.role || ''} ${row.user.assignedBox || ''}`,
       );
       return haystack.includes(q);
     });
+  }
+
+  setRoleFilter(filter: 'all' | 'acheteur' | 'boutique'): void {
+    this.roleFilter = filter;
+    this.applyFilters();
   }
 
   banUser(row: UserRow): void {
@@ -723,7 +790,7 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     this.showCreateSellerModal = false;
     this.creatingSeller = false;
     this.createSellerError = '';
-    this.createSellerForm = { name: '', email: '', boxNumber: '', password: '' };
+    this.createSellerForm = { name: '', email: '', boxNumber: '', password: '', confirmPassword: '' };
   }
 
   submitCreateSeller(event: Event): void {
@@ -733,14 +800,19 @@ export class AdminUsersComponent implements OnInit, OnDestroy {
     const name = String(this.createSellerForm.name || '').trim();
     const email = String(this.createSellerForm.email || '').trim().toLowerCase();
     const password = String(this.createSellerForm.password || '').trim();
+    const confirmPassword = String(this.createSellerForm.confirmPassword || '').trim();
     const boxNumber = this.normalizeBoxNumber(this.createSellerForm.boxNumber);
 
-    if (!name || !email || !password || !boxNumber) {
+    if (!name || !email || !password || !confirmPassword || !boxNumber) {
       this.createSellerError = 'Tous les champs sont obligatoires. Le box doit être numérique.';
       return;
     }
     if (password.length < 6) {
       this.createSellerError = 'Le mot de passe doit contenir au moins 6 caractères.';
+      return;
+    }
+    if (password !== confirmPassword) {
+      this.createSellerError = 'Le mot de passe et sa confirmation ne correspondent pas.';
       return;
     }
 

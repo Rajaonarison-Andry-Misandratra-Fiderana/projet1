@@ -8,6 +8,7 @@ import {
   LoginRequest,
   SignupRequest,
   AdminCreateSellerRequest,
+  ChangePasswordRequest,
 } from '../models/user.model';
 import { API_BASE_URL } from '../config/api.config';
 
@@ -120,6 +121,10 @@ export class AuthService {
     return this.http
       .post<{ user: User }>(`${this.apiUrl}/admin-create-seller`, payload)
       .pipe(tap(() => this.usersRefreshSubject.next()));
+  }
+
+  changePassword(payload: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/change-password`, payload);
   }
 
   isAuthenticated(): boolean {

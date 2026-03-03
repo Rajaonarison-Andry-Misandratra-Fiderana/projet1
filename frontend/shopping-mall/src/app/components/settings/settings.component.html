@@ -1,0 +1,44 @@
+<section class="settings-page">
+  <div class="settings-card">
+    <header class="settings-head">
+      <h1>Settings</h1>
+      <p>Changer votre mot de passe</p>
+    </header>
+
+    <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+    <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+    <form [formGroup]="passwordForm" (ngSubmit)="submit()" class="form-grid">
+      <label class="field">
+        <span>Mot de passe actuel</span>
+        <input type="password" formControlName="currentPassword" placeholder="Votre mot de passe actuel" />
+      </label>
+      <small class="field-error" *ngIf="f['currentPassword'].touched && f['currentPassword'].invalid">
+        Minimum 6 caractères.
+      </small>
+
+      <label class="field">
+        <span>Nouveau mot de passe</span>
+        <input type="password" formControlName="newPassword" placeholder="Nouveau mot de passe" />
+      </label>
+      <small class="field-error" *ngIf="f['newPassword'].touched && f['newPassword'].invalid">
+        Minimum 6 caractères.
+      </small>
+
+      <label class="field">
+        <span>Confirmer le nouveau mot de passe</span>
+        <input type="password" formControlName="confirmPassword" placeholder="Confirmez le mot de passe" />
+      </label>
+      <small class="field-error" *ngIf="passwordForm.touched && passwordForm.errors?.['passwordMismatch']">
+        Les mots de passe ne correspondent pas.
+      </small>
+
+      <div class="actions">
+        <a routerLink="/profile" class="btn-secondary">Retour profil</a>
+        <button type="submit" class="btn-primary" [disabled]="submitting">
+          {{ submitting ? 'Mise à jour...' : 'Mettre à jour' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
