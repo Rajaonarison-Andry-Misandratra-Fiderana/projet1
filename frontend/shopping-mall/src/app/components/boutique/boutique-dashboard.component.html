@@ -1,7 +1,7 @@
 <section class="seller-dashboard">
   <header class="dashboard-header">
     <h1>Tableau de bord boutique</h1>
-    <p>Performance de vos offres: visibilité, ventes et stock.</p>
+    <p>Suivi de vos offres: ventes, stock et historique clients.</p>
   </header>
 
   <div *ngIf="error" class="alert alert-error">
@@ -12,11 +12,6 @@
     <article class="stat-card">
       <p class="label">Produits</p>
       <p class="value">{{ productsCount }}</p>
-    </article>
-
-    <article class="stat-card">
-      <p class="label">Commandes</p>
-      <p class="value">{{ ordersCount }}</p>
     </article>
 
     <article class="stat-card">
@@ -38,7 +33,7 @@
   <div *ngIf="loading" class="loading-panel">Chargement des statistiques boutique...</div>
 
   <section *ngIf="!loading" class="table-section">
-    <h2>Produits et performance</h2>
+    <h2>Produits</h2>
 
     <div *ngIf="productRows.length === 0" class="empty">Aucun produit à afficher.</div>
 
@@ -50,8 +45,7 @@
             <th>Catégorie</th>
             <th>Prix</th>
             <th>Stock</th>
-            <th>Ventes</th>
-            <th>Commandes</th>
+            <th>Vendu</th>
             <th>Revenu</th>
           </tr>
         </thead>
@@ -62,7 +56,6 @@
             <td>{{ row.price | number: '1.0-0' }} MGA</td>
             <td>{{ row.stock }}</td>
             <td>{{ row.unitsSold }}</td>
-            <td>{{ row.orderCount }}</td>
             <td>{{ row.salesAmount | number: '1.0-0' }} MGA</td>
           </tr>
         </tbody>
